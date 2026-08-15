@@ -67,7 +67,9 @@ export const UNITS = [
       { id: "u3l1", title: "Ré, Mi, Fa", exercise: "notes", pool: L(["Ré4", "Mi4", "Fa4"]), total: 8 },
       { id: "u3l2", title: "Sol et La", exercise: "notes", pool: L(["Fa4", "Sol4", "La4"]), total: 8 },
       { id: "u3l3", title: "Sol et Ré ensemble", exercise: "notes", pool: merge(stringNotes("sol"), stringNotes("re")), total: 12 },
-      { id: "u3l4", title: "Point d'étape", exercise: "notes", pool: merge(stringNotes("sol"), stringNotes("re")), total: 14, timerMode: "adaptatif", checkpoint: true },
+      // l'autre sens du lien nom ↔ position : il ne se transfère qu'à moitié
+      { id: "u3l4", title: "Écrire la note", exercise: "ecrire", pool: merge(stringNotes("sol"), stringNotes("re")), total: 8 },
+      { id: "u3l5", title: "Point d'étape", exercise: "notes", pool: merge(stringNotes("sol"), stringNotes("re")), total: 14, timerMode: "adaptatif", checkpoint: true },
     ],
   },
   {
@@ -113,6 +115,17 @@ export const UNITS = [
     ],
   },
   {
+    id: "u65",
+    title: "Le manche",
+    hint: "Savoir où poser le doigt, pas seulement lire",
+    tone: "var(--brick)",
+    lessons: [
+      { id: "u65l1", title: "Corde et doigt", exercise: "doigte", total: 10 },
+      { id: "u65l2", title: "Sans hésiter", exercise: "doigte", total: 12 },
+      { id: "u65l3", title: "Point d'étape", exercise: "doigte", total: 14, checkpoint: true },
+    ],
+  },
+  {
     id: "u7",
     title: "L'oreille",
     hint: "Reconnaître un intervalle",
@@ -120,7 +133,12 @@ export const UNITS = [
     lessons: [
       { id: "u7l1", title: "Quarte, quinte, octave", exercise: "intervalles", difficulty: "debutant", total: 8 },
       { id: "u7l2", title: "Tierces et sixtes", exercise: "intervalles", difficulty: "intermediaire", total: 10 },
-      { id: "u7l3", title: "Point d'étape", exercise: "intervalles", difficulty: "intermediaire", total: 12, checkpoint: true },
+      // ici la note est jouée sans être montrée : l'oreille travaille seule
+      {
+        id: "u7l3", title: "Écouter et placer", exercise: "ecouter",
+        pool: merge(...byString.map((s) => s.notes)), total: 10,
+      },
+      { id: "u7l4", title: "Point d'étape", exercise: "intervalles", difficulty: "intermediaire", total: 12, checkpoint: true },
     ],
   },
   {

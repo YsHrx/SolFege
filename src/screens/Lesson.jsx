@@ -6,6 +6,13 @@ import {
 } from "../exercises/NoteReading.jsx";
 import { RhythmView, makeRhythmDraw, rhythmIsCorrect } from "../exercises/RhythmReading.jsx";
 import { IntervalView, makeIntervalDraw, intervalIsCorrect } from "../exercises/IntervalEar.jsx";
+import { RANGES } from "../music/notes.js";
+import {
+  NotePlacingView, makePlacingDraw, placingIsCorrect,
+} from "../exercises/NotePlacing.jsx";
+import {
+  FingerboardView, makeFingeringDraw, fingeringIsCorrect,
+} from "../exercises/Fingering.jsx";
 
 /* ============================================================
    DÉROULÉ D'UNE LEÇON
@@ -39,6 +46,31 @@ export const EXERCISES = {
     tone: "var(--mustard)",
     needsSound: true,
   },
+  ecrire: {
+    id: "ecrire",
+    title: "Écrire la note",
+    short: "Écrire",
+    hint: "Poser sur la portée la note demandée",
+    tone: "var(--brick)",
+    needsSound: false,
+  },
+  ecouter: {
+    id: "ecouter",
+    title: "Écouter et placer",
+    short: "Écouter",
+    hint: "Poser sur la portée la note entendue",
+    tone: "var(--blue)",
+    needsSound: true,
+  },
+  doigte: {
+    id: "doigte",
+    title: "Le doigté",
+    short: "Doigté",
+    hint: "Trouver la corde et le doigt sur le manche",
+    tone: "var(--moss)",
+    needsSound: false,
+    fixedDifficulty: true, // la première position, un point c'est tout
+  },
 };
 
 export default function Lesson({ config, progress, audio, onFinish }) {
@@ -49,6 +81,9 @@ export default function Lesson({ config, progress, audio, onFinish }) {
   const draw = useMemo(() => {
     if (exercise === "rythme") return makeRhythmDraw(difficulty, progress.items);
     if (exercise === "intervalles") return makeIntervalDraw(difficulty, progress.items);
+    if (exercise === "doigte") return makeFingeringDraw(progress.items);
+    if (exercise === "ecrire") return makePlacingDraw(difficulty, progress.items, pool, "ecrire");
+    if (exercise === "ecouter") return makePlacingDraw(difficulty, progress.items, pool, "ecouter");
     return makeNoteDraw(difficulty, progress.items, pool);
     // le sac est figé au démarrage : la mémoire évoluant à chaque réponse,
     // le recalculer changerait les poids en cours de leçon
@@ -58,12 +93,14 @@ export default function Lesson({ config, progress, audio, onFinish }) {
   const isCorrect = useCallback((q, v) => {
     if (exercise === "rythme") return rhythmIsCorrect(q, v);
     if (exercise === "intervalles") return intervalIsCorrect(q, v);
+    if (exercise === "doigte") return fingeringIsCorrect(q, v);
+    if (exercise === "ecrire" || exercise === "ecouter") return placingIsCorrect(q, v);
     return noteIsCorrect(q, v, notation);
   }, [exercise, notation]);
 
   const timer = useMemo(() => {
     if (format === "mort_subite") return { mode: "adaptatif", start: 7, min: 1.6, max: 7, step: 0.22 };
-    if (exercise !== "notes") return { mode: "libre" };
+    if (!["notes", "ecrire", "ecouter"].includes(exercise)) return { mode: "libre" };
     if (config.timerMode === "adaptatif") return { mode: "adaptatif", start: 6, min: 2, max: 9, step: 0.25 };
     if (config.timerMode === "fixe") return { mode: "fixe", start: config.fixedSeconds || 6 };
     return { mode: "libre" };
@@ -152,6 +189,13 @@ export default function Lesson({ config, progress, audio, onFinish }) {
         )}
         {exercise === "intervalles" && (
           <IntervalView lesson={lesson} audio={audio} soundOn={soundOn} />
+        )}
+        {(exercise === "ecrire" || exercise === "ecouter") && (
+          <NotePlacingView lesson={lesson} notation={notation} audio={audio}
+            soundOn={soundOn} pool={pool || RANGES[difficulty].notes} />
+        )}
+        {exercise === "doigte" && (
+          <FingerboardView lesson={lesson} audio={audio} soundOn={soundOn} />
         )}
       </div>
 

@@ -19,6 +19,25 @@ const CHRONO_SECONDS = [60, 90, 120];
 
 function ExerciseIcon({ id }) {
   if (id === "rythme") return <NoteFigure value="croche" size={30} />;
+  if (id === "doigte") {
+    return (
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden>
+        <rect x="7" y="2.5" width="10" height="19" rx="3" fill="none"
+          stroke="currentColor" strokeWidth="2.2" />
+        <path d="M10 3v18M14 3v18" stroke="currentColor" strokeWidth="1.6" />
+        <circle cx="10" cy="10" r="2.6" fill="currentColor" />
+      </svg>
+    );
+  }
+  if (id === "ecrire" || id === "ecouter") {
+    return (
+      <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden>
+        <path d="M2 7h20M2 12h20M2 17h20" stroke="currentColor" strokeWidth="1.6" />
+        <ellipse cx="15" cy="14.5" rx="4.2" ry="3.1" transform="rotate(-18 15 14.5)"
+          fill="currentColor" />
+      </svg>
+    );
+  }
   if (id === "intervalles") {
     return (
       <svg width="28" height="28" viewBox="0 0 24 24" aria-hidden>
@@ -92,13 +111,14 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
   const [timerMode, setTimerMode] = useState("libre");
   const [fixedSeconds, setFixedSeconds] = useState(6);
 
-  const showTimer = exercise === "notes" && format === "serie";
+  const showTimer = ["notes", "ecrire", "ecouter"].includes(exercise) && format === "serie";
+  const showDifficulty = !ex.fixedDifficulty;
   const record = progress.records[recordKey(exercise, format, difficulty)];
 
   const poolHint =
-    exercise === "notes" ? RANGES[difficulty].hint
-      : exercise === "rythme" ? RHYTHM_POOL[difficulty].map((r) => r.label).join(", ")
-        : `${INTERVAL_POOL[difficulty].length} intervalles testés`;
+    exercise === "rythme" ? RHYTHM_POOL[difficulty].map((r) => r.label).join(", ")
+      : exercise === "intervalles" ? `${INTERVAL_POOL[difficulty].length} intervalles testés`
+        : RANGES[difficulty].hint;
 
   const start = () => onStart({
     exercise, difficulty, format,
@@ -150,14 +170,22 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-2">
-        <span className="label">
-          Difficulté — {exercise === "notes" ? "quelles notes apparaissent" : "quelles valeurs sont testées"}
-        </span>
-        <Segmented value={difficulty} onChange={setDifficulty} ariaLabel="Difficulté"
-          options={DIFFICULTIES.map((d) => ({ value: d, label: RANGES[d].label }))} />
-        <p className="text-xs" style={{ color: "var(--ink-3)" }}>{poolHint}</p>
-      </div>
+      {showDifficulty ? (
+        <div className="flex flex-col gap-2">
+          <span className="label">
+            Difficulté — {exercise === "rythme" || exercise === "intervalles"
+              ? "quelles valeurs sont testées" : "quelles notes apparaissent"}
+          </span>
+          <Segmented value={difficulty} onChange={setDifficulty} ariaLabel="Difficulté"
+            options={DIFFICULTIES.map((d) => ({ value: d, label: RANGES[d].label }))} />
+          <p className="text-xs" style={{ color: "var(--ink-3)" }}>{poolHint}</p>
+        </div>
+      ) : (
+        <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+          Toute la première position — c'est le cadre de l'exercice, il n'y a
+          pas de difficulté à régler.
+        </p>
+      )}
 
       {showTimer && (
         <div className="flex flex-col gap-2">
