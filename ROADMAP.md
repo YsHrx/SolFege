@@ -25,61 +25,61 @@ mais seul le mode Progression fait avancer le chemin.
 
 ## Phase 0 — La direction artistique
 
-- [ ] Jetons de thème : papier (clair) et ardoise (sombre), en variables CSS
-- [ ] Polices auto-hébergées — Baloo 2 (titres) + IBM Plex Sans (texte), sous-ensemble latin
-- [ ] Retirer la dépendance Google Fonts de `index.html`
-- [ ] Figures de notes dessinées en SVG — ronde, blanche, noire, noire pointée, croche, double-croche
+- [x] ~~Jetons de thème : papier (clair) et ardoise (sombre), en variables CSS~~
+- [x] ~~Polices auto-hébergées — Baloo 2 (titres) + IBM Plex Sans (texte), sous-ensemble latin~~
+- [x] ~~Retirer la dépendance Google Fonts de `index.html`~~
+- [x] ~~Figures de notes dessinées en SVG — ronde, blanche, noire, noire pointée, croche, double-croche~~
       *(corrige le défaut : blanche et noire rendues identiques par la police système)*
-- [ ] Clef de sol dessinée en SVG, accrochée à la 2ᵉ ligne
-- [ ] Portée redessinée : cadre ajusté, hampes qui rejoignent la ligne médiane, lignes supplémentaires propres
-- [ ] Silences dessinés (pause, demi-pause, soupir, demi-soupir, quart de soupir)
-- [ ] Primitives d'interface : bouton en relief, carte cernée, puce, ombres pleines
-- [ ] Grain papier en surimpression
-- [ ] Mascotte « la croche » — 6 expressions : repos, écoute, content, ravi, raté, endormi
-- [ ] Bascule de thème papier / ardoise / système
+- [x] ~~Clef de sol dessinée en SVG, accrochée à la 2ᵉ ligne~~
+- [x] ~~Portée redessinée : cadre ajusté, hampes qui rejoignent la ligne médiane, lignes supplémentaires propres~~
+- [x] ~~Silences dessinés (pause, demi-pause, soupir, demi-soupir, quart de soupir)~~
+- [x] ~~Primitives d'interface : bouton en relief, carte cernée, puce, ombres pleines~~
+- [x] ~~Grain papier en surimpression~~
+- [x] ~~Mascotte « la croche » — 6 expressions : repos, écoute, content, ravi, raté, endormi~~
+- [x] ~~Bascule de thème papier / ardoise / système~~
 
 ## Phase 1 — Architecture
 
-- [ ] Éclater `App.jsx` (1 625 lignes) en modules : `music/`, `audio/`, `state/`, `ui/`, `screens/`, `exercises/`
-- [ ] Extraire le moteur audio dans `audio/useAudio.js`
-- [ ] Schéma de sauvegarde v5 + migration sans perte depuis `violin_trainer_state_v4`
-- [ ] Sélecteur Progression / Entraînement
-- [ ] Écran de réglages : thème, notation, son, objectif du jour, cœurs, réinitialisation
+- [x] ~~Éclater `App.jsx` (1 625 lignes) en modules : `music/`, `audio/`, `state/`, `ui/`, `screens/`, `exercises/`~~
+- [x] ~~Extraire le moteur audio dans `audio/useAudio.js`~~
+- [x] ~~Schéma de sauvegarde v5 + migration sans perte depuis `violin_trainer_state_v4`~~
+- [x] ~~Sélecteur Progression / Entraînement~~
+- [x] ~~Écran de réglages : thème, notation, son, objectif du jour, cœurs, réinitialisation~~
 
 ## Phase 2 — Le moteur de leçon
 
-- [ ] Moteur générique partagé par tous les exercices : file de questions, réponse, correction, avance
-- [ ] Trois fausses notes (l'équivalent des cœurs) — icône corde qui casse, désactivable
-- [ ] File de reprise : les items ratés reviennent en fin de leçon jusqu'à ce qu'ils passent
-- [ ] Compteur de combo, bannière à 5, changement d'ambiance à 10
-- [ ] Écran de fin en trois temps, avec les chiffres qui s'incrémentent en comptant
-- [ ] Revue des erreurs en fin de leçon, sur mini-portée, avec « rejouer ces cinq-là »
-- [ ] Barème d'XP unifié entre les trois modules *(corrige : deux modules sur trois rapportaient moitié moins)*
+- [x] ~~Moteur générique partagé par tous les exercices : file de questions, réponse, correction, avance~~
+- [x] ~~Trois fausses notes (l'équivalent des cœurs) — icône corde qui casse, désactivable~~
+- [x] ~~File de reprise : les items ratés reviennent en fin de leçon jusqu'à ce qu'ils passent~~
+- [x] ~~Compteur de combo, bannière à 5, changement d'ambiance à 10~~
+- [x] ~~Écran de fin en trois temps, avec les chiffres qui s'incrémentent en comptant~~
+- [x] ~~Revue des erreurs en fin de leçon, sur mini-portée, avec « rejouer ces cinq-là »~~
+- [x] ~~Barème d'XP unifié entre les trois modules~~ *(corrige : deux modules sur trois rapportaient moitié moins)*
 
 ## Phase 3 — Mode Entraînement
 
-- [ ] Accueil du mode : les exercices en cartes, avec le record de chacun
-- [ ] Porter la lecture de notes sur le nouveau moteur
-- [ ] Porter la lecture rythmique
-- [ ] Porter les intervalles
-- [ ] **Format Série** — un nombre de questions fixe (le format actuel)
-- [ ] **Format Contre-la-montre** — 60 / 90 / 120 s, maximum de bonnes réponses
-- [ ] **Format Mort subite** — sans fin, s'arrête à la première erreur, la vitesse se resserre au fil des réussites
-- [ ] Régimes de chrono pour la lecture de notes : libre, adaptatif, fixe
-- [ ] Records par exercice × format × difficulté, affichés et battables
-- [ ] Écran de fin propre à chaque format (temps tenu, meilleure série, notes/minute)
+- [x] ~~Accueil du mode : les exercices en cartes, avec le record de chacun~~
+- [x] ~~Porter la lecture de notes sur le nouveau moteur~~
+- [x] ~~Porter la lecture rythmique~~
+- [x] ~~Porter les intervalles~~
+- [x] ~~**Format Série** — un nombre de questions fixe (le format actuel)~~
+- [x] ~~**Format Contre-la-montre** — 60 / 90 / 120 s, maximum de bonnes réponses~~
+- [x] ~~**Format Mort subite** — sans fin, s'arrête à la première erreur, la vitesse se resserre au fil des réussites~~
+- [x] ~~Régimes de chrono pour la lecture de notes : libre, adaptatif, fixe~~
+- [x] ~~Records par exercice × format × difficulté, affichés et battables~~
+- [x] ~~Écran de fin propre à chaque format (temps tenu, meilleure série, notes/minute)~~
 
 ## Phase 4 — Mode Progression
 
-- [ ] Programme : unités et leçons, corde par corde puis registre par registre
-- [ ] Le chemin visuel qui serpente, nœuds verrouillés / en cours / acquis / en or
-- [ ] Déverrouillage à l'avancement, points d'étape entre les unités
-- [ ] Répétition espacée : compteurs par item (vu, raté, dernière fois), tirage 60 / 25 / 15
-- [ ] Série en **jours** consécutifs *(corrige : « série » désignait trois choses, dont une qui ne bougeait jamais)*
-- [ ] Objectif du jour réglable (1 / 3 / 5 leçons) avec anneau de progression
-- [ ] Gel de série — un jour de rattrapage gagné toutes les dix leçons
-- [ ] Calendrier du mois avec les jours pratiqués
-- [ ] Bouton « Renforcer mes points faibles » — une leçon bâtie sur les items les plus ratés
+- [x] ~~Programme : unités et leçons, corde par corde puis registre par registre~~
+- [x] ~~Le chemin visuel qui serpente, nœuds verrouillés / en cours / acquis / en or~~
+- [x] ~~Déverrouillage à l'avancement, points d'étape entre les unités~~
+- [x] ~~Répétition espacée : compteurs par item (vu, raté, dernière fois), tirage 60 / 25 / 15~~
+- [x] ~~Série en **jours** consécutifs~~ *(corrige : « série » désignait trois choses, dont une qui ne bougeait jamais)*
+- [x] ~~Objectif du jour réglable (1 / 3 / 5 leçons) avec anneau de progression~~
+- [x] ~~Gel de série — un jour de rattrapage gagné toutes les dix leçons~~
+- [x] ~~Calendrier du mois avec les jours pratiqués~~
+- [x] ~~Bouton « Renforcer mes points faibles » — une leçon bâtie sur les items les plus ratés~~
 - [ ] Niveau légendaire : refaire une unité acquise sans erreur et au chrono, pour la passer en or
 - [ ] Courbe de progression alimentée par l'historique *(corrige : `history` était écrit et jamais lu)*
 
@@ -98,28 +98,28 @@ mais seul le mode Progression fait avancer le chemin.
 
 ## Phase 6 — Animations
 
-- [ ] Courbe à ressort `cubic-bezier(.34,1.56,.64,1)` sur tous les appuis
-- [ ] Enfoncement du bouton en relief
-- [ ] Pop de bonne réponse : la note grossit à 1,15 puis revient
-- [ ] Secousse d'erreur : ±6 px, trois allers-retours, sur le bouton et la portée
+- [x] ~~Courbe à ressort `cubic-bezier(.34,1.56,.64,1)` sur tous les appuis~~
+- [x] ~~Enfoncement du bouton en relief~~
+- [x] ~~Pop de bonne réponse : la note grossit à 1,15 puis revient~~
+- [x] ~~Secousse d'erreur : ±6 px, trois allers-retours, sur le bouton et la portée~~
 - [ ] Barre de progression qui rebondit et flashe
-- [ ] Chiffres qui comptent sur l'écran de fin
-- [ ] Pluie de croches à la fin d'une leçon réussie
+- [x] ~~Chiffres qui comptent sur l'écran de fin~~
+- [x] ~~Pluie de croches à la fin d'une leçon réussie~~
 - [ ] Glissement horizontal entre deux questions
-- [ ] Réactions de la mascotte
-- [ ] Tout derrière `prefers-reduced-motion`
+- [x] ~~Réactions de la mascotte~~
+- [x] ~~Tout derrière `prefers-reduced-motion`~~
 
 ## Phase 7 — Finitions et correctifs de la revue
 
 - [x] ~~Ajouter le Si5 aux notes de niveau intermédiaire~~ *(4ᵉ doigt sur la corde de Mi)*
-- [ ] Clavier physique — `d r m f s l t`, `1`-`7`, Espace pour réécouter
+- [x] ~~Clavier physique — `d r m f s l t`, `1`-`7`, Espace pour réécouter~~
 - [ ] PWA réelle : service worker, icônes PNG 192 et 512, fonctionnement hors ligne
-- [ ] Précharger les quinze échantillons, pas dix — et n'annoncer « prêt » qu'une fois la tessiture couverte
-- [ ] Recaler l'animation de pulsation du module rythme sur l'horloge audio
+- [x] ~~Précharger les quinze échantillons, pas dix — et n'annoncer « prêt » qu'une fois la tessiture couverte~~
+- [x] ~~Recaler l'animation de pulsation du module rythme sur l'horloge audio~~
 - [ ] Accessibilité : équivalent textuel de la portée, `aria-live` sur les corrections, focus visible partout
-- [ ] Réinitialiser la progression depuis les réglages
-- [ ] Export et import de la progression en JSON
-- [ ] Corriger l'écart `PARTIAL_BYTES` 80 ko / commentaire 70 ko
+- [x] ~~Réinitialiser la progression depuis les réglages~~
+- [x] ~~Export et import de la progression en JSON~~
+- [x] ~~Corriger l'écart `PARTIAL_BYTES` 80 ko / commentaire 70 ko~~
 - [ ] Neutraliser le double déclenchement des effets sous `React.StrictMode` en développement
 - [ ] Mettre le README à jour
 
