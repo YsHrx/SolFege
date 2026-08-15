@@ -140,7 +140,9 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
       <div className="flex flex-col gap-2">
         <span className="label">Format de partie</span>
         <div className="flex flex-col gap-2">
-          {Object.values(FORMATS).map((f) => (
+          {Object.values(FORMATS)
+            .filter((f) => !(ex.needsMic && f.id === "chrono"))
+            .map((f) => (
             <button key={f.id} type="button" onClick={() => setFormat(f.id)}
               className="btn" aria-pressed={format === f.id}
               style={{

@@ -90,7 +90,7 @@ mais seul le mode Progression fait avancer le chemin.
 - [x] ~~**Le doigté** — corde et doigt (0 à 4) sur un manche dessiné~~ *(propre au violon)*
 - [x] ~~**Écouter et placer** — la note est jouée, pas affichée~~
 - [ ] **Dictée de rythme** — taper le rythme entendu sur un gros bouton
-- [ ] **La justesse au micro** — détection de hauteur par autocorrélation, curseur en cents *(propre au violon)*
+- [x] ~~**La justesse au micro** — détection de hauteur par autocorrélation, curseur en cents~~ *(propre au violon)*
 - [ ] **Chanter l'intervalle** — produire l'intervalle demandé, validé au micro
 - [ ] **Armures et tonalités** — deux dièses → Ré majeur
 - [ ] Altérations (dièses, bémols, bécarres) dans la lecture de notes

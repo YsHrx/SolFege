@@ -126,6 +126,22 @@ export const UNITS = [
     ],
   },
   {
+    id: "u66",
+    title: "La justesse",
+    hint: "Jouer les notes, micro allumé",
+    tone: "var(--mustard)",
+    lessons: [
+      // on commence par les cordes à vide : elles sont justes par
+      // construction, ce qui laisse le temps d'apprivoiser l'aiguille
+      { id: "u66l1", title: "Les cordes à vide", exercise: "justesse", pool: OPEN, total: 6 },
+      { id: "u66l2", title: "Corde de Ré et de La", exercise: "justesse", pool: merge(stringNotes("re"), stringNotes("la")), total: 8 },
+      {
+        id: "u66l3", title: "Point d'étape", exercise: "justesse",
+        pool: merge(...byString.map((s) => s.notes)), total: 10, checkpoint: true,
+      },
+    ],
+  },
+  {
     id: "u7",
     title: "L'oreille",
     hint: "Reconnaître un intervalle",

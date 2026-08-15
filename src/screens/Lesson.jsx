@@ -13,6 +13,9 @@ import {
 import {
   FingerboardView, makeFingeringDraw, fingeringIsCorrect,
 } from "../exercises/Fingering.jsx";
+import {
+  IntonationView, makeIntonationDraw, intonationIsCorrect,
+} from "../exercises/Intonation.jsx";
 
 /* ============================================================
    DÉROULÉ D'UNE LEÇON
@@ -62,6 +65,15 @@ export const EXERCISES = {
     tone: "var(--blue)",
     needsSound: true,
   },
+  justesse: {
+    id: "justesse",
+    title: "La justesse",
+    short: "Justesse",
+    hint: "Jouer la note au violon — le micro écoute",
+    tone: "var(--brick)",
+    needsSound: false,
+    needsMic: true,
+  },
   doigte: {
     id: "doigte",
     title: "Le doigté",
@@ -82,6 +94,7 @@ export default function Lesson({ config, progress, audio, onFinish }) {
     if (exercise === "rythme") return makeRhythmDraw(difficulty, progress.items);
     if (exercise === "intervalles") return makeIntervalDraw(difficulty, progress.items);
     if (exercise === "doigte") return makeFingeringDraw(progress.items);
+    if (exercise === "justesse") return makeIntonationDraw(difficulty, progress.items, pool);
     if (exercise === "ecrire") return makePlacingDraw(difficulty, progress.items, pool, "ecrire");
     if (exercise === "ecouter") return makePlacingDraw(difficulty, progress.items, pool, "ecouter");
     return makeNoteDraw(difficulty, progress.items, pool);
@@ -94,11 +107,15 @@ export default function Lesson({ config, progress, audio, onFinish }) {
     if (exercise === "rythme") return rhythmIsCorrect(q, v);
     if (exercise === "intervalles") return intervalIsCorrect(q, v);
     if (exercise === "doigte") return fingeringIsCorrect(q, v);
+    if (exercise === "justesse") return intonationIsCorrect(q, v);
     if (exercise === "ecrire" || exercise === "ecouter") return placingIsCorrect(q, v);
     return noteIsCorrect(q, v, notation);
   }, [exercise, notation]);
 
   const timer = useMemo(() => {
+    // on ne met pas un violoniste au chronomètre pendant qu'il cherche sa
+    // justesse : l'exercice a son propre garde-fou
+    if (exercise === "justesse") return { mode: "libre" };
     if (format === "mort_subite") return { mode: "adaptatif", start: 7, min: 1.6, max: 7, step: 0.22 };
     if (!["notes", "ecrire", "ecouter"].includes(exercise)) return { mode: "libre" };
     if (config.timerMode === "adaptatif") return { mode: "adaptatif", start: 6, min: 2, max: 9, step: 0.25 };
@@ -196,6 +213,9 @@ export default function Lesson({ config, progress, audio, onFinish }) {
         )}
         {exercise === "doigte" && (
           <FingerboardView lesson={lesson} audio={audio} soundOn={soundOn} />
+        )}
+        {exercise === "justesse" && (
+          <IntonationView lesson={lesson} audio={audio} soundOn={soundOn} />
         )}
       </div>
 
