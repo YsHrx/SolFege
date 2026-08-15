@@ -53,7 +53,7 @@ function NodeIcon({ lesson, state }) {
   return <NoteFigure value="noire" size={26} />;
 }
 
-function PathNode({ lesson, state, offset, onStart, isNext }) {
+function PathNode({ lesson, state, offset, onStart, isNext, tone }) {
   const bg =
     state === "or" ? "var(--mustard)"
       : state === "fait" ? "var(--moss)"
@@ -61,6 +61,11 @@ function PathNode({ lesson, state, offset, onStart, isNext }) {
           : "var(--sunk)";
   const fg = state === "or" || state === "fait" ? "var(--on-color)" : "var(--ink)";
   const locked = state === "verrouille";
+  // Un nœud ouvert doit se distinguer d'un nœud verrouillé sans porter la
+  // couleur d'un nœud acquis : on lui donne un anneau à la teinte de l'unité.
+  const ring = state === "ouvert" ? `0 0 0 4px ${tone}` : "";
+  const lift = locked ? "0 3px 0 var(--edge)" : "0 6px 0 var(--edge)";
+  const shadow = ring ? `${ring}, ${lift}` : lift;
 
   return (
     <div className="relative flex flex-col items-center"
@@ -81,7 +86,7 @@ function PathNode({ lesson, state, offset, onStart, isNext }) {
           width: NODE, height: NODE, borderRadius: "50%",
           background: bg, color: fg,
           border: "3px solid var(--edge)",
-          boxShadow: locked ? "0 3px 0 var(--edge)" : "0 6px 0 var(--edge)",
+          boxShadow: shadow,
           display: "grid", placeItems: "center",
           cursor: locked ? "default" : "pointer",
           opacity: locked ? 0.55 : 1,
@@ -90,15 +95,15 @@ function PathNode({ lesson, state, offset, onStart, isNext }) {
         onMouseDown={(e) => {
           if (locked) return;
           e.currentTarget.style.transform = "translateY(6px)";
-          e.currentTarget.style.boxShadow = "0 0 0 var(--edge)";
+          e.currentTarget.style.boxShadow = ring || "0 0 0 var(--edge)";
         }}
         onMouseUp={(e) => {
           e.currentTarget.style.transform = "";
-          e.currentTarget.style.boxShadow = locked ? "0 3px 0 var(--edge)" : "0 6px 0 var(--edge)";
+          e.currentTarget.style.boxShadow = shadow;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = "";
-          e.currentTarget.style.boxShadow = locked ? "0 3px 0 var(--edge)" : "0 6px 0 var(--edge)";
+          e.currentTarget.style.boxShadow = shadow;
         }}
       >
         <NodeIcon lesson={lesson} state={state} />
@@ -175,7 +180,7 @@ export default function Path({ progress, onStart, onPractiseWeak }) {
                 const st = states.find((s) => s.id === l.id);
                 const isNext = l.id === next.id;
                 const node = (
-                  <PathNode key={l.id} lesson={l} state={st.state}
+                  <PathNode key={l.id} lesson={l} state={st.state} tone={unit.tone}
                     offset={offsetFor(index)} onStart={onStart} isNext={isNext} />
                 );
                 index += 1;

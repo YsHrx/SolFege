@@ -68,8 +68,22 @@ export function Hearts({ left, max = 3 }) {
   );
 }
 
-/** Barre de progression de la leçon. */
-export function Gauge({ value, tone = "var(--mustard)", flash }) {
+/** Barre de progression de la leçon. Elle flashe à chaque avancée : sans
+    ce clignotement, un pas de 8 % passe complètement inaperçu. */
+export function Gauge({ value, tone = "var(--mustard)" }) {
+  const [flash, setFlash] = useState(false);
+  const previous = useRef(value);
+  useEffect(() => {
+    if (value > previous.current) {
+      setFlash(true);
+      const t = setTimeout(() => setFlash(false), 280);
+      previous.current = value;
+      return () => clearTimeout(t);
+    }
+    previous.current = value;
+    return undefined;
+  }, [value]);
+
   return (
     <div className="gauge flex-1">
       <i className={flash ? "anim-flash" : ""}

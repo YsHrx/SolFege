@@ -81,7 +81,7 @@ mais seul le mode Progression fait avancer le chemin.
 - [x] ~~Calendrier du mois avec les jours pratiqués~~
 - [x] ~~Bouton « Renforcer mes points faibles » — une leçon bâtie sur les items les plus ratés~~
 - [ ] Niveau légendaire : refaire une unité acquise sans erreur et au chrono, pour la passer en or
-- [ ] Courbe de progression alimentée par l'historique *(corrige : `history` était écrit et jamais lu)*
+- [x] ~~Courbe de progression alimentée par l'historique~~ *(corrige : `history` était écrit et jamais lu)*
 
 ## Phase 5 — Nouveaux exercices
 
@@ -102,10 +102,10 @@ mais seul le mode Progression fait avancer le chemin.
 - [x] ~~Enfoncement du bouton en relief~~
 - [x] ~~Pop de bonne réponse : la note grossit à 1,15 puis revient~~
 - [x] ~~Secousse d'erreur : ±6 px, trois allers-retours, sur le bouton et la portée~~
-- [ ] Barre de progression qui rebondit et flashe
+- [x] ~~Barre de progression qui rebondit et flashe~~
 - [x] ~~Chiffres qui comptent sur l'écran de fin~~
 - [x] ~~Pluie de croches à la fin d'une leçon réussie~~
-- [ ] Glissement horizontal entre deux questions
+- [x] ~~Glissement horizontal entre deux questions~~
 - [x] ~~Réactions de la mascotte~~
 - [x] ~~Tout derrière `prefers-reduced-motion`~~
 
@@ -113,15 +113,15 @@ mais seul le mode Progression fait avancer le chemin.
 
 - [x] ~~Ajouter le Si5 aux notes de niveau intermédiaire~~ *(4ᵉ doigt sur la corde de Mi)*
 - [x] ~~Clavier physique — `d r m f s l t`, `1`-`7`, Espace pour réécouter~~
-- [ ] PWA réelle : service worker, icônes PNG 192 et 512, fonctionnement hors ligne
+- [x] ~~PWA réelle : service worker, icônes PNG 192 et 512, fonctionnement hors ligne~~
 - [x] ~~Précharger les quinze échantillons, pas dix — et n'annoncer « prêt » qu'une fois la tessiture couverte~~
 - [x] ~~Recaler l'animation de pulsation du module rythme sur l'horloge audio~~
-- [ ] Accessibilité : équivalent textuel de la portée, `aria-live` sur les corrections, focus visible partout
+- [x] ~~Accessibilité : équivalent textuel de la portée, `aria-live` sur les corrections, focus visible partout~~
 - [x] ~~Réinitialiser la progression depuis les réglages~~
 - [x] ~~Export et import de la progression en JSON~~
 - [x] ~~Corriger l'écart `PARTIAL_BYTES` 80 ko / commentaire 70 ko~~
-- [ ] Neutraliser le double déclenchement des effets sous `React.StrictMode` en développement
-- [ ] Mettre le README à jour
+- [x] ~~Neutraliser le double déclenchement des effets sous `React.StrictMode` en développement~~
+- [x] ~~Mettre le README à jour~~
 
 ---
 

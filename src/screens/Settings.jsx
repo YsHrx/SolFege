@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Btn, Card, Segmented } from "../ui/kit.jsx";
 import { GOALS, dayKey } from "../state/progress.js";
+import Curve from "../ui/Curve.jsx";
 
 /* ============================================================
    RÉGLAGES
@@ -135,6 +136,10 @@ export default function Settings({ progress, onChange, onReset, onBack }) {
       </Row>
 
       <span className="label mt-2">Pratique</span>
+      <Card className="p-4 flex flex-col gap-2">
+        <span className="label">Précision par leçon</span>
+        <Curve sessions={progress.sessions} />
+      </Card>
       <Calendar log={progress.days.log} />
 
       <span className="label mt-2">Données</span>

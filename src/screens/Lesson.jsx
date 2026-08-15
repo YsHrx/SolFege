@@ -139,16 +139,32 @@ export default function Lesson({ config, progress, audio, onFinish }) {
         )}
       </div>
 
-      {exercise === "notes" && (
-        <NoteReadingView lesson={lesson} notation={notation}
-          playNote={playNote} soundOn={soundOn} />
-      )}
-      {exercise === "rythme" && (
-        <RhythmView lesson={lesson} audio={audio} soundOn={soundOn} />
-      )}
-      {exercise === "intervalles" && (
-        <IntervalView lesson={lesson} audio={audio} soundOn={soundOn} />
-      )}
+      {/* La clé sur l'index fait rejouer l'animation d'entrée : la question
+          sortante laisse la place à une question qui arrive par la droite,
+          au lieu d'un remplacement sec. */}
+      <div key={lesson.index} className="anim-slide w-full flex flex-col items-center gap-4">
+        {exercise === "notes" && (
+          <NoteReadingView lesson={lesson} notation={notation}
+            playNote={playNote} soundOn={soundOn} />
+        )}
+        {exercise === "rythme" && (
+          <RhythmView lesson={lesson} audio={audio} soundOn={soundOn} />
+        )}
+        {exercise === "intervalles" && (
+          <IntervalView lesson={lesson} audio={audio} soundOn={soundOn} />
+        )}
+      </div>
+
+      {/* Annonce la correction aux lecteurs d'écran. Sans cela, l'exercice
+          se joue en silence total pour qui ne voit pas la portée. */}
+      <p aria-live="polite" className="sr-only" style={{
+        position: "absolute", width: 1, height: 1, overflow: "hidden",
+        clip: "rect(0 0 0 0)", whiteSpace: "nowrap",
+      }}>
+        {lesson.phase === "feedback"
+          ? (lesson.wasCorrect ? "Bonne réponse" : "Raté")
+          : ""}
+      </p>
 
       {mode === "progression" && config.lessonTitle && (
         <Card flat className="p-2 px-3">

@@ -1,90 +1,121 @@
 # SolFège
 
-Entraînement au solfège pour violonistes. Trois exercices courts — lecture de
-notes, lecture rythmique, reconnaissance d'intervalles — jouables en quelques
-minutes, au clavier ou au doigt.
+Entraînement au solfège pour violonistes. Deux façons de s'en servir : suivre
+un parcours, ou lancer un exercice à la carte.
 
 Tout tourne dans le navigateur : pas de compte, pas de serveur, aucune donnée
-qui sort de la machine. La progression est enregistrée en local.
+qui sort de la machine. L'application s'installe et fonctionne hors ligne.
 
 ---
 
-## Les trois modules
+## Les deux modes
 
-### Lecture de notes — 20 questions
+Un sélecteur en haut de l'accueil bascule de l'un à l'autre. Les deux
+alimentent la même progression — XP, niveau, mémoire par note — mais seul le
+mode Progression fait avancer le chemin.
 
-Une note s'affiche sur la portée en clé de sol et se fait entendre au violon.
-On répond sur un clavier de sept touches. En cas d'erreur, la touche fautive
-passe au rouge et la bonne réponse au vert.
+### Progression
 
-La difficulté détermine l'étendue tirée au sort :
+Un chemin d'unités qui se débloquent, corde par corde : les cordes à vide, la
+corde de Sol, celle de Ré, le rythme, celle de La, celle de Mi, l'oreille, puis
+toute la tessiture. Chaque unité se termine par un point d'étape qui mélange
+ce qui précède.
 
-| Niveau | Étendue | Notes |
-| --- | --- | --- |
-| Débutant | Sol3 → Sol5 | Les quatre cordes à vide et leurs voisines immédiates (12 notes) |
-| Intermédiaire | Sol3 → Si5 | Toute la première position, 4e doigt compris (17 notes) |
-| Avancé | Sol3 → Do7 | La tessiture usuelle de l'instrument |
+On ne choisit ni exercice, ni difficulté, ni format : c'est l'avancement qui
+élargit le sac de questions. Le tirage passe par une **répétition espacée** —
+chaque note, valeur ou intervalle porte un poids qui tient compte de sa
+fragilité, de sa nouveauté et du temps écoulé depuis la dernière rencontre. Ce
+qu'on rate revient ; ce qui est acquis s'espace.
 
-Trois régimes de chronomètre, propres à ce module :
+Un bouton **Renforcer mes points faibles** compose une leçon à partir des huit
+items les plus ratés dès qu'il y a de quoi.
 
-- **Libre** — aucune limite, la note suivante arrive dès la réponse.
-- **Adaptatif** — le temps se resserre de 0,25 s à chaque réussite et
-  s'élargit de 0,5 s à chaque erreur, entre 2 et 9 secondes. C'est le mode
-  qui fait réellement progresser la vitesse de lecture.
-- **Fixe** — de 2 à 15 secondes, identique à chaque note.
+### Entraînement
 
-### Lecture rythmique — 12 questions
+Les mêmes exercices, à la carte, avec trois formats de partie :
 
-Une pulsation régulière tourne à environ 97 BPM. Une note de violon est tenue
-sur sa durée réelle, deux fois de suite. Il n'y a aucune autre valeur jouée :
-il s'agit uniquement de compter combien de temps la note occupe par rapport à
-la pulsation.
-
-| Niveau | Valeurs testées |
+| Format | Principe |
 | --- | --- |
-| Débutant | Ronde, blanche, noire |
-| Intermédiaire | + noire pointée, croche |
-| Avancé | + double-croche |
+| **Série** | Un nombre de questions fixe. Les items ratés reviennent avant la fin. |
+| **Contre-la-montre** | 60, 90 ou 120 secondes, un maximum de bonnes réponses. |
+| **Mort subite** | Sans fin. La première erreur arrête tout, et le temps accordé par question se resserre à chaque réussite. |
 
-### Intervalles — 12 questions
-
-Deux notes jouées successivement, à partir d'une fondamentale tirée entre Ré4
-et La4. On nomme l'intervalle.
-
-| Niveau | Intervalles |
-| --- | --- |
-| Débutant | Unisson, quarte juste, quinte juste, octave |
-| Intermédiaire | 8 intervalles, dont tierces et sixtes |
-| Avancé | Les 13, de l'unisson à l'octave |
+Un record est tenu pour chaque combinaison exercice × format × difficulté.
 
 ---
 
-## Progression
+## Les exercices
 
-Chaque session terminée rapporte de l'XP proportionnelle au score, plus un
-bonus de série. Une session abandonnée compte à moitié, ne rapporte pas de
-bonus et ne casse pas la série en cours : quitter en route n'est pas puni.
+### Lecture de notes
 
-Un niveau demande `100 + (niveau − 1) × 60` XP. La série compte les sessions
-parfaites d'affilée. Le taux de réussite par module est affiché sur l'accueil.
+Une note s'affiche sur la portée et se fait entendre au violon. On répond sur
+sept touches, **au doigt ou au clavier** : `D R M F S L T` en notation
+française, `C D E F G A B` en anglaise, `1` à `7` dans les deux cas, et Espace
+pour réécouter.
 
-Tout est stocké dans le `localStorage` du navigateur, sous la clé
-`violin_trainer_state_v4`. Vider les données du site remet le compteur à zéro ;
-la progression ne suit pas d'un appareil à l'autre.
+| Difficulté | Étendue |
+| --- | --- |
+| Débutant | Les quatre cordes à vide et leurs voisines immédiates |
+| Intermédiaire | Toute la première position, 4ᵉ doigt compris — Sol3 à Si5 |
+| Avancé | Sol3 à Do7, la tessiture usuelle |
+
+Trois régimes de chronomètre en format Série : **libre**, **fixe** (2 à 15 s),
+et **adaptatif** — le temps se resserre de 0,25 s à chaque réussite et
+s'élargit de 0,5 s à chaque erreur, entre 2 et 9 secondes. C'est celui qui fait
+réellement progresser la vitesse de lecture.
+
+### Lecture rythmique
+
+Une pulsation régulière tourne à environ 97 à la noire. Une note de violon est
+tenue sur sa durée réelle, deux fois de suite. Aucune autre valeur n'est
+jouée : il s'agit de compter combien de temps elle occupe.
+
+Débutant : ronde, blanche, noire. Intermédiaire : plus la noire pointée et la
+croche. Avancé : plus la double-croche.
+
+### Intervalles
+
+Deux notes jouées successivement depuis une fondamentale tirée entre Ré4 et
+La4. Débutant : unisson, quarte, quinte, octave. Intermédiaire : huit
+intervalles. Avancé : les treize.
+
+---
+
+## La progression
+
+**La série compte les jours** consécutifs où l'on a pratiqué, pas les sessions
+parfaites. Un objectif quotidien réglable (1, 3 ou 5 leçons) remplit un anneau,
+et un **gel de série** gagné toutes les dix leçons — deux en réserve au maximum
+— couvre une journée manquée. Un calendrier du mois montre les jours pratiqués.
+
+Une leçon rapporte de l'XP proportionnelle au score, plus un bonus de combo,
+selon le même barème pour les trois exercices. Un niveau demande
+`100 + (niveau − 1) × 60` XP.
+
+**Trois fausses notes** par leçon : à la troisième erreur, la leçon s'arrête et
+reste à refaire. La journée de pratique compte quand même. On peut couper cette
+limite dans les réglages pour s'entraîner sans contrainte.
+
+En fin de leçon, les notes manquées sont affichées **sur une mini-portée** —
+savoir sur quoi on a buté est plus utile qu'un pourcentage. Une courbe de
+précision par leçon est disponible dans les réglages.
+
+Tout est stocké dans le `localStorage`, sous la clé `solfege_v5`. Une ancienne
+sauvegarde `violin_trainer_state_v4` est reprise automatiquement. Les réglages
+permettent d'exporter la progression en JSON, ou de tout effacer.
 
 ---
 
 ## Le son
 
-Le violon entendu est un vrai violon, pas une synthèse. Quinze échantillons
-(La, Do, Mi et Sol de chaque octave, de Sol3 à Do7) couvrent la tessiture ; les
-notes intermédiaires sont obtenues en ajustant la vitesse de lecture, avec deux
+Le violon entendu est un vrai violon, pas une synthèse. Quinze échantillons (La,
+Do, Mi et Sol de chaque octave, de Sol3 à Do7) couvrent la tessiture ; les notes
+intermédiaires sont obtenues en ajustant la vitesse de lecture, avec deux
 demi-tons de transposition au maximum, ce qui reste juste à l'oreille.
 
 Les fichiers pèsent 424 ko au total et sont servis depuis le site lui-même. Le
 chargement est progressif : les quatre hauteurs les plus utilisées d'abord, le
-reste en tâche de fond. L'indicateur en bas de l'accueil dit où en est le
-chargement.
+reste en tâche de fond.
 
 Deux filets de sécurité, dans cet ordre :
 
@@ -95,8 +126,27 @@ Deux filets de sécurité, dans cet ordre :
    trois dents de scie légèrement désaccordées, filtres formants aux résonances
    d'un violon, bruit d'archet, vibrato progressif. Moins beau, mais jouable.
 
-Le métronome du module rythmique est programmé sur l'horloge audio et non sur
-des minuteurs JavaScript : le tempo ne dérive pas.
+Le métronome et l'animation de pulsation sont tous deux calés sur l'horloge
+audio, jamais sur des minuteurs JavaScript : le tempo ne dérive pas, et les
+pastilles ne décrochent pas du son.
+
+---
+
+## La direction artistique
+
+Un cahier de musique : papier blanc cassé, encre noire, tout cerné d'un trait
+de 2,5 px. **Aucun dégradé, aucune ombre floue** — uniquement des aplats et des
+ombres pleines décalées, comme du papier découpé. Un grain de papier en
+surimpression achève de retirer l'aspect vectoriel.
+
+Le thème sombre n'est pas un « noir premium » mais une **ardoise** : tableau
+noir, traits à la craie. Papier, ardoise ou celui du système, au choix.
+
+La notation, elle, reste **gravée et juste** : les contours viennent de Bravura,
+la police de référence SMuFL. L'élève doit reconnaître ce qu'il verra sur une
+partition — le trait épais est porté par l'interface, pas par les notes.
+
+La mascotte est une croche, avec six expressions.
 
 ---
 
@@ -110,58 +160,62 @@ npm run preview  # prévisualise le build
 ```
 
 Aucune configuration, aucune variable d'environnement. Le résultat de `build`
-est un site statique, déployable tel quel sur n'importe quel hébergeur.
+est un site statique, déployable tel quel.
 
 ### Structure
 
 ```
-index.html                    page hôte, polices, manifeste PWA
-src/App.jsx                   toute l'application
-src/main.jsx                  point d'entrée React
-src/index.css                 directives Tailwind
-public/samples/               15 échantillons de violon (424 ko)
-public/icon.svg               icône
-public/manifest.webmanifest   installable sur mobile
+src/
+  App.jsx                routeur d'écrans, en-tête, sélecteur de mode
+  index.css              jetons des deux thèmes, primitives, animations
+  music/                 notes et manche, valeurs rythmiques, intervalles
+  audio/useAudio.js      échantillons, synthèse de secours, métronome
+  state/
+    progress.js          sauvegarde v5, série en jours, XP, records
+    srs.js               répétition espacée, tirage pondéré
+  lesson/
+    engine.js            moteur commun : formats, cœurs, file de reprise
+    curriculum.js        le programme du mode Progression
+  ui/
+    notation.js          contours Bravura (produit par script)
+    Glyphs.jsx           figures, silences, clef, portée
+    Mascot.jsx           la croche, six expressions
+    kit.jsx              boutons, cartes, jauges, combo, pluie de croches
+    Curve.jsx            courbe de précision
+  screens/               Path, Training, Lesson, Results, Settings
+  exercises/             NoteReading, RhythmReading, IntervalEar
+public/
+  samples/               15 échantillons de violon (424 ko)
+  fonts/                 Baloo 2 et IBM Plex, sous-ensemble latin
 ```
 
-React 18, Vite 5, Tailwind 3, Web Audio API. Pas d'autre dépendance à
-l'exécution ; les polices viennent de Google Fonts.
+React 18, Vite 5, Tailwind 3, Web Audio API, `vite-plugin-pwa`. Les polices
+sont auto-hébergées : aucune requête vers un CDN.
 
 ### Réglages rapides
 
-Tout est en haut de `src/App.jsx` :
-
 | Ce qu'on veut changer | Où |
 | --- | --- |
-| Palette de couleurs | objet `C` |
-| Notes de chaque difficulté | `DEBUTANT_LABELS`, `INTERMEDIAIRE_LABELS`, `AVANCE_LABELS` |
-| Valeurs rythmiques et intervalles testés | `RHYTHM_POOL`, `INTERVAL_POOL` |
-| Nombre de questions par session | `NOTES_TOTAL`, `RHYTHM_TOTAL`, `INTERVAL_TOTAL` |
-| Tempo du module rythmique | `BEAT_MS` |
-| Courbe d'XP | `xpForLevel` |
+| Couleurs des deux thèmes | `src/index.css`, blocs `:root` |
+| Notes de chaque difficulté | `src/music/notes.js`, `RANGES` |
+| Le programme du chemin | `src/lesson/curriculum.js` |
+| Valeurs rythmiques, intervalles | `src/music/rhythm.js`, `src/music/intervals.js` |
+| Formats de partie | `src/lesson/engine.js`, `FORMATS` |
+| Pondération de la répétition espacée | `src/state/srs.js`, `weightOf` |
+| Courbe d'XP, série, gels | `src/state/progress.js` |
 
 ---
 
-## À faire
+## Ce qui reste à faire
 
-Le module de justesse au micro n'existe pas encore. Il s'agirait de capter le
-violon via `getUserMedia`, de détecter la hauteur par autocorrélation et de la
-comparer à la note demandée. C'est la fonctionnalité qui distinguerait
-vraiment cet outil de ce qui existe déjà.
-
-Autres pistes : altérations et armures, clé d'ut, intervalles harmoniques
-(deux notes simultanées), export de la progression.
+Voir [ROADMAP.md](ROADMAP.md). L'essentiel : de nouveaux formats d'exercice —
+écrire la note sur la portée, lire une mesure entière, le doigté sur un manche
+dessiné, et surtout **la justesse au micro**, qui est la fonctionnalité qui
+distinguerait vraiment cet outil de ce qui existe déjà.
 
 ---
 
 ## Crédits et licence
 
-Code sous licence MIT — voir [LICENSE](LICENSE).
-
-Les échantillons de violon proviennent de la **Versilian Studios Chamber
-Orchestra 2 — Community Edition**, redistribués via
-[tonejs-instruments](https://github.com/nbrosowsky/tonejs-instruments) et
-placés sous licence
-[CC BY 3.0](https://creativecommons.org/licenses/by/3.0/). Ils ont été
-raccourcis et ré-encodés pour l'usage web ; toute réutilisation doit conserver
-cette attribution.
+Code sous licence MIT — voir [LICENSE](LICENSE). Échantillons, police de
+notation et polices d'interface : voir [CREDITS.md](CREDITS.md).
