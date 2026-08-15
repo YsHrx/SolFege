@@ -47,11 +47,14 @@ const staffPosition = (note) => note.diatonicIndex - E4.diatonicIndex;
 
 // Difficulté = quelles notes apparaissent
 const DEBUTANT_LABELS = ["Sol3", "La3", "Si3", "Ré4", "Mi4", "Fa4", "La4", "Si4", "Do5", "Mi5", "Fa5", "Sol5"];
+// Première position complète, corde par corde. Chaque ligne = une corde à vide
+// suivie des quatre doigts. Le Si5 est le 4e doigt sur la corde de Mi : il fait
+// partie de la première position au même titre que le Ré4 sur la corde de Sol.
 const INTERMEDIAIRE_LABELS = [
-  "Sol3", "La3", "Si3", "Do4",
-  "Ré4", "Mi4", "Fa4", "Sol4",
-  "La4", "Si4", "Do5", "Ré5",
-  "Mi5", "Fa5", "Sol5", "La5",
+  "Sol3", "La3", "Si3", "Do4",        // corde de Sol
+  "Ré4", "Mi4", "Fa4", "Sol4",        // corde de Ré
+  "La4", "Si4", "Do5", "Ré5",         // corde de La
+  "Mi5", "Fa5", "Sol5", "La5", "Si5", // corde de Mi
 ];
 const AVANCE_LABELS = ALL_NOTES.filter(
   (n) => n.midi >= noteByLabel("Sol3").midi && n.midi <= noteByLabel("Do7").midi

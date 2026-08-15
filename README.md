@@ -22,7 +22,7 @@ La difficulté détermine l'étendue tirée au sort :
 | Niveau | Étendue | Notes |
 | --- | --- | --- |
 | Débutant | Sol3 → Sol5 | Les quatre cordes à vide et leurs voisines immédiates (12 notes) |
-| Intermédiaire | Sol3 → La5 | Toute la première position (16 notes) |
+| Intermédiaire | Sol3 → Si5 | Toute la première position, 4e doigt compris (17 notes) |
 | Avancé | Sol3 → Do7 | La tessiture usuelle de l'instrument |
 
 Trois régimes de chronomètre, propres à ce module :
