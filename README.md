@@ -16,10 +16,11 @@ mode Progression fait avancer le chemin.
 
 ### Progression
 
-Un chemin d'unités qui se débloquent, corde par corde : les cordes à vide, la
-corde de Sol, celle de Ré, le rythme, celle de La, celle de Mi, l'oreille, puis
-toute la tessiture. Chaque unité se termine par un point d'étape qui mélange
-ce qui précède.
+Treize unités qui se débloquent l'une après l'autre, corde par corde : les
+cordes à vide, la corde de Sol, celle de Ré, le rythme, celle de La, celle de
+Mi, le manche, la justesse, l'oreille, la lecture en continu, les altérations
+et les armures, la production d'intervalles, puis toute la tessiture. Chaque
+unité se termine par un point d'étape qui mélange ce qui précède.
 
 On ne choisit ni exercice, ni difficulté, ni format : c'est l'avancement qui
 élargit le sac de questions. Le tirage passe par une **répétition espacée** —
@@ -146,7 +147,7 @@ et un **gel de série** gagné toutes les dix leçons — deux en réserve au ma
 — couvre une journée manquée. Un calendrier du mois montre les jours pratiqués.
 
 Une leçon rapporte de l'XP proportionnelle au score, plus un bonus de combo,
-selon le même barème pour les trois exercices. Un niveau demande
+selon le même barème pour tous les exercices. Un niveau demande
 `100 + (niveau − 1) × 60` XP.
 
 **Trois fausses notes** par leçon : à la troisième erreur, la leçon s'arrête et
