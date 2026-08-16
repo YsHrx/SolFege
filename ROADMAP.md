@@ -127,16 +127,17 @@ mais seul le mode Progression fait avancer le chemin.
 
 ## État
 
-Les huit phases sont terminées. L'application compte onze exercices, trois
-formats de partie, un chemin de treize unités et un mode Entraînement complet.
+**Tout est fait.** Treize exercices, trois formats de partie, un chemin de
+seize unités, trois clefs, trois positions de main gauche, et deux exercices
+au micro dont un polyphonique.
 
-## Pistes pour la suite
+## Ce qui a été ajouté après coup
 
-Rien de tout cela n'était dans la revue initiale ; à verser au fur et à mesure.
+Rien de ceci n'était dans la revue initiale.
 
-- [ ] Deuxième et troisième positions sur le manche
-- [ ] Doubles cordes : deux notes simultanées, à la justesse
-- [ ] Lecture rythmique à plusieurs valeurs par mesure, avec silences
-- [ ] Mesures composées (6/8, 9/8) et changements de tempo
-- [ ] Import d'une progression exportée
-- [ ] Choix du tempo de référence dans les réglages
+- [x] ~~Deuxième et troisième positions sur le manche~~
+- [x] ~~Doubles cordes : deux notes simultanées, à la justesse~~
+- [x] ~~Lecture rythmique à plusieurs valeurs par mesure, avec silences~~
+- [x] ~~Mesures composées (6/8, 9/8) et changements de tempo~~
+- [x] ~~Import d'une progression exportée~~
+- [x] ~~Choix du tempo de référence dans les réglages~~

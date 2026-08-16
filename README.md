@@ -16,10 +16,11 @@ mode Progression fait avancer le chemin.
 
 ### Progression
 
-Treize unités qui se débloquent l'une après l'autre, corde par corde : les
+Seize unités qui se débloquent l'une après l'autre, corde par corde : les
 cordes à vide, la corde de Sol, celle de Ré, le rythme, celle de La, celle de
 Mi, le manche, la justesse, l'oreille, la lecture en continu, les altérations
-et les armures, la production d'intervalles, puis toute la tessiture. Chaque
+et les armures, les mesures et silences, la production d'intervalles, toute la
+tessiture, les changements de position, puis les doubles cordes. Chaque
 unité se termine par un point d'étape qui mélange ce qui précède.
 
 On ne choisit ni exercice, ni difficulté, ni format : c'est l'avancement qui
@@ -45,7 +46,7 @@ Un record est tenu pour chaque combinaison exercice × format × difficulté.
 
 ---
 
-## Les onze exercices
+## Les treize exercices
 
 ### Lecture de notes
 
@@ -71,7 +72,8 @@ réellement progresser la vitesse de lecture.
 
 ### Lecture rythmique
 
-Une pulsation régulière tourne à environ 97 à la noire. Une note de violon est
+Une pulsation régulière tourne au tempo réglé dans les réglages, 97 à la noire
+par défaut. Une note de violon est
 tenue sur sa durée réelle, deux fois de suite. Aucune autre valeur n'est
 jouée : il s'agit de compter combien de temps elle occupe.
 
@@ -110,12 +112,40 @@ donnée à la correction : elle partage l'armure, et l'oublier est une confusion
 classique. Le nombre d'altérations n'apparaît qu'après la réponse — l'afficher
 avant reviendrait à la donner.
 
+### Reconnaître la mesure
+
+Une mesure entière se fait entendre — plusieurs valeurs, des silences, un
+chiffrage — et on choisit celle qui est écrite parmi quatre. C'est ce qui
+apporte les silences et les mesures composées : en 6/8 et 9/8 la pulsation est
+pointée, et le générateur privilégie les groupes de trois croches, sinon un 6/8
+rempli de noires ne sonnerait pas comme un 6/8.
+
+Les leurres sont de vraies mesures du même chiffrage, jamais des motifs qui
+sonneraient identiquement.
+
 ### Le doigté
 
 Une note s'affiche, on désigne la corde et le doigt sur un manche dessiné.
 L'exercice propre au violon : savoir lire une note ne sert à rien si l'on ne
 sait pas où la poser. Les notes jouables à deux endroits acceptent les deux
 réponses.
+
+Disponible en 1re, 2e et 3e positions. Le Ré4 en 1re et le Ré4 en 3e sont
+deux items de mémoire distincts : ce n'est pas le même geste.
+
+### Doubles cordes
+
+Deux notes tenues ensemble, et le micro vérifie les deux hauteurs en même
+temps. C'est là que la justesse compte vraiment : une note seule un peu haute
+passe inaperçue, la même dans une quinte fait battre l'accord — d'où une
+tolérance resserrée à ±18 cents.
+
+L'autocorrélation ne sert à rien pour deux sons simultanés, mais on n'a pas
+besoin d'une détection polyphonique aveugle : on sait quelles deux notes sont
+attendues, et il suffit de chercher le pic du spectre autour de chacune.
+Octaves et unissons sont écartés du tirage — la fondamentale de la note haute
+y coïncide avec une harmonique de la basse, et les deux deviennent
+indiscernables.
 
 ### La justesse
 
@@ -160,7 +190,9 @@ précision par leçon est disponible dans les réglages.
 
 Tout est stocké dans le `localStorage`, sous la clé `solfege_v5`. Une ancienne
 sauvegarde `violin_trainer_state_v4` est reprise automatiquement. Les réglages
-permettent d'exporter la progression en JSON, ou de tout effacer.
+permettent d'exporter la progression en JSON, de réimporter un export, ou de
+tout effacer. Un fichier importé passe par la même normalisation que la
+sauvegarde locale : un export trafiqué ne peut pas casser l'accueil.
 
 ---
 
@@ -261,6 +293,9 @@ sont auto-hébergées : aucune requête vers un CDN.
 | Formats de partie | `src/lesson/engine.js`, `FORMATS` |
 | Pondération de la répétition espacée | `src/state/srs.js`, `weightOf` |
 | Courbe d'XP, série, gels | `src/state/progress.js` |
+| Mesures, silences, tempo | `src/music/rhythm.js` |
+| Positions et doubles cordes | `src/music/notes.js` |
+| Seuils de justesse au micro | `TOLERANCE` en tête des exercices concernés |
 
 ---
 
@@ -271,11 +306,9 @@ ses leçons, au chronomètre adaptatif, sans la moindre erreur. Réussie, elle
 passe entièrement en or. C'est ce qui donne une raison de revenir sur ce qu'on
 sait déjà.
 
-## Ce qui reste à faire
+## État
 
-Voir [ROADMAP.md](ROADMAP.md) — la feuille de route de la refonte est terminée,
-les lignes qui restent sont des pistes ouvertes : deuxième et troisième
-positions, doubles cordes, mesures composées.
+La feuille de route est terminée — voir [ROADMAP.md](ROADMAP.md).
 
 ---
 
