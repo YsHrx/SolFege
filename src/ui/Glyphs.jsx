@@ -125,9 +125,58 @@ export function TrebleClef({ x = 0, y = 0 }) {
   return <Path name="gClef" x={x} y={y} />;
 }
 
+/* Quel signe, et sur quel degré il s'ancre. Doit rester aligné avec
+   CLEFS dans music/notes.js. */
+const CLEF_GLYPH = {
+  sol: { glyph: "gClef", origin: 2 },
+  ut3: { glyph: "cClef", origin: 4 },
+  fa: { glyph: "fClef", origin: 6 },
+};
+
 /* ============================================================
    PORTÉE
    ============================================================ */
+
+/* ============================================================
+   ARMURES
+
+   Les altérations d'une armure ne se posent pas n'importe où : leur
+   ordre et leur hauteur sont fixés par l'usage. En clé de sol, les
+   dièses suivent Fa Do Sol Ré La Mi Si et les bémols l'ordre inverse,
+   chacun à une position convenue qui garde l'armure compacte autour de
+   la portée.
+
+   Positions en degrés depuis la ligne du bas (Mi4 = 0).
+   ============================================================ */
+const KEY_SIG_POSITIONS = {
+  sol: {
+    "#": [8, 5, 9, 6, 3, 7, 4],   // Fa5 Do5 Sol5 Ré5 La4 Mi5 Si4
+    b: [4, 7, 3, 6, 2, 5, 1],     // Si4 Mi5 La4 Ré5 Sol4 Do5 Fa4
+  },
+  ut3: {
+    "#": [7, 4, 8, 5, 2, 6, 3],
+    b: [3, 6, 2, 5, 1, 4, 0],
+  },
+  fa: {
+    "#": [6, 3, 7, 4, 1, 5, 2],
+    b: [2, 5, 1, 4, 0, 3, -1],
+  },
+};
+
+/** Les tonalités majeures, dans l'ordre du cycle des quintes. */
+export const KEY_SIGNATURES = [
+  { count: 0, type: "#", major: "Do majeur", minor: "La mineur" },
+  { count: 1, type: "#", major: "Sol majeur", minor: "Mi mineur" },
+  { count: 2, type: "#", major: "Ré majeur", minor: "Si mineur" },
+  { count: 3, type: "#", major: "La majeur", minor: "Fa♯ mineur" },
+  { count: 4, type: "#", major: "Mi majeur", minor: "Do♯ mineur" },
+  { count: 5, type: "#", major: "Si majeur", minor: "Sol♯ mineur" },
+  { count: 1, type: "b", major: "Fa majeur", minor: "Ré mineur" },
+  { count: 2, type: "b", major: "Si♭ majeur", minor: "Sol mineur" },
+  { count: 3, type: "b", major: "Mi♭ majeur", minor: "Do mineur" },
+  { count: 4, type: "b", major: "La♭ majeur", minor: "Fa mineur" },
+  { count: 5, type: "b", major: "Ré♭ majeur", minor: "Si♭ mineur" },
+];
 
 const CLEF_TOP_ABOVE_G = -GLYPH.gClef.box[1] / U;   // 4,39 interlignes
 const CLEF_BELOW_G = GLYPH.gClef.box[3] / U;        // 2,63 interlignes
@@ -145,16 +194,21 @@ export function Staff({
   spacing = 16,
   slots,
   showClef = true,
+  clef = "sol",
+  keySignature = null,   // { count, type: "#" | "b" }
   className = "",
   ariaLabel,
 }) {
   const k = spacing / U;
   const count = Math.max(1, slots || notes.length || 1);
 
-  // La ligne de Sol est le 2e degré : une fois la clef posée dessus, on
-  // sait de combien elle déborde en haut et en bas.
-  const clefAbove = showClef ? CLEF_TOP_ABOVE_G - 1 : 0;   // au-dessus de la ligne du bas
-  const clefBelow = showClef ? CLEF_BELOW_G + 1 : 0;       // sous la ligne du bas
+  const clefDef = CLEF_GLYPH[clef] || CLEF_GLYPH.sol;
+  // Le signe est posé sur son degré d'ancrage : on en déduit ce qu'il
+  // déborde au-dessus et au-dessous de la portée.
+  const gTop = -GLYPH[clefDef.glyph].box[1] / U;
+  const gBottom = GLYPH[clefDef.glyph].box[3] / U;
+  const clefAbove = showClef ? gTop + clefDef.origin / 2 : 0;
+  const clefBelow = showClef ? gBottom - clefDef.origin / 2 : 0;
 
   // Débordement dû aux notes : hampes, crochets et lignes supplémentaires.
   let noteAbove = 4, noteBelow = 0; // au minimum, la hauteur de la portée
@@ -174,9 +228,21 @@ export function Staff({
   const height = bottomLineY + padBottom * spacing;
   const yOf = (p) => bottomLineY - (p * spacing) / 2;
 
-  const clefW = showClef ? GLYPH.gClef.box[2] * k : 0;
+  const clefW = showClef ? GLYPH[clefDef.glyph].box[2] * k : 0;
   const leftPad = spacing * 0.5;
-  const noteZoneStart = leftPad + clefW + spacing * 1.2;
+
+  // armure : une altération par degré, serrées les unes contre les autres
+  const sigPositions = keySignature && keySignature.count > 0
+    ? (KEY_SIG_POSITIONS[clef] || KEY_SIG_POSITIONS.sol)[keySignature.type]
+      .slice(0, keySignature.count)
+    : [];
+  const sigGlyph = keySignature && keySignature.type === "b"
+    ? "accidentalFlat" : "accidentalSharp";
+  const sigStep = spacing * (keySignature && keySignature.type === "b" ? 0.62 : 0.66);
+  const sigStart = leftPad + clefW + spacing * 0.5;
+  const sigW = sigPositions.length ? sigPositions.length * sigStep + spacing * 0.4 : 0;
+
+  const noteZoneStart = sigStart + sigW + spacing * 0.9;
   // une altération occupe un peu plus d'un interligne devant sa note :
   // sans cette marge, elle viendrait mordre la note précédente
   const hasAccidental = notes.some((n) => n.accidental);
@@ -206,10 +272,17 @@ export function Staff({
       })}
 
       {showClef && (
-        <g transform={`translate(${leftPad} ${yOf(2)}) scale(${k})`} color="var(--ink)">
-          <TrebleClef />
+        <g transform={`translate(${leftPad} ${yOf(clefDef.origin)}) scale(${k})`} color="var(--ink)">
+          <Path name={clefDef.glyph} />
         </g>
       )}
+
+      {sigPositions.map((p, i) => (
+        <g key={i} transform={`translate(${sigStart + i * sigStep} ${yOf(p)}) scale(${k})`}
+          color="var(--ink)">
+          <Path name={sigGlyph} />
+        </g>
+      ))}
 
       {notes.map((n, i) => (
         <StaffNote

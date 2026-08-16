@@ -253,6 +253,16 @@ export function applyLesson(prev, result) {
     path.done[result.lessonId] = before === "or" || perfect ? "or" : "fait";
   }
 
+  // Niveau légendaire : une unité déjà acquise, refaite sans la moindre
+  // erreur et au chronomètre, passe entièrement en or. C'est ce qui donne
+  // une raison de revenir sur ce qu'on sait déjà.
+  if (
+    counts && !result.failed && !result.abandoned
+    && result.legendaryLessons && result.correct === result.total && result.total > 0
+  ) {
+    for (const id of result.legendaryLessons) path.done[id] = "or";
+  }
+
   return {
     ...prev,
     xp, level, days, items, records, path,

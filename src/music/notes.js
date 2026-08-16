@@ -30,10 +30,88 @@ const BY_LABEL = new Map(ALL_NOTES.map((n) => [n.label, n]));
 export const noteByLabel = (l) => BY_LABEL.get(l);
 export const noteName = (note, notation) => (notation === "en" ? note.nameEn : note.name);
 
-/* Position sur la portée en clé de sol, comptée en degrés depuis la ligne
-   du bas (Mi4). 0 = ligne du bas, 8 = ligne du haut. */
-const E4 = BY_LABEL.get("Mi4");
-export const staffPosition = (note) => note.diatonic - E4.diatonic;
+/* ============================================================
+   CLEFS
+
+   Une clef, c'est une équivalence entre un degré diatonique et une
+   position sur la portée. Tout le reste s'en déduit — d'où ce petit
+   tableau plutôt qu'une formule figée sur la clé de sol.
+
+   `origin` est la position où se pose le point d'ancrage SMuFL du
+   signe : la ligne de Sol pour la clef de sol, la ligne désignée pour
+   les clefs d'ut et de fa.
+   ============================================================ */
+export const CLEFS = {
+  sol: {
+    id: "sol", label: "Clé de sol", glyph: "gClef",
+    ref: "Mi4", refPosition: 0, origin: 2,
+  },
+  ut3: {
+    id: "ut3", label: "Clé d'ut 3e", glyph: "cClef",
+    ref: "Do4", refPosition: 4, origin: 4,
+  },
+  fa: {
+    id: "fa", label: "Clé de fa", glyph: "fClef",
+    ref: "Sol2", refPosition: 0, origin: 6,
+  },
+};
+
+/* Position sur la portée, en degrés depuis la ligne du bas.
+   0 = ligne du bas, 8 = ligne du haut. */
+export function staffPositionIn(note, clefId = "sol") {
+  const c = CLEFS[clefId] || CLEFS.sol;
+  return note.diatonic - BY_LABEL.get(c.ref).diatonic + c.refPosition;
+}
+
+/** Raccourci pour la clé de sol, de loin la plus utilisée ici. */
+export const staffPosition = (note) => staffPositionIn(note, "sol");
+
+/** La note qui occupe un degré donné, dans une clef donnée. */
+export function noteAtPosition(position, clefId = "sol") {
+  const c = CLEFS[clefId] || CLEFS.sol;
+  const diatonic = position - c.refPosition + BY_LABEL.get(c.ref).diatonic;
+  return ALL_NOTES.find((n) => n.diatonic === diatonic) || null;
+}
+
+/* ============================================================
+   ALTÉRATIONS
+
+   Une hauteur altérée, c'est un degré diatonique plus un décalage :
+   −1 bémol, 0 bécarre, +1 dièse. On garde le degré séparé du décalage
+   parce que c'est ainsi que ça se lit sur une portée — le Do♯ et le
+   Ré♭ sonnent pareil mais ne s'écrivent pas au même endroit.
+   ============================================================ */
+export const ALTERATIONS = [
+  { alt: -1, sign: "b", glyph: "accidentalFlat", label: "bémol", suffix: "♭" },
+  { alt: 0, sign: "n", glyph: "accidentalNatural", label: "bécarre", suffix: "♮" },
+  { alt: 1, sign: "#", glyph: "accidentalSharp", label: "dièse", suffix: "♯" },
+];
+
+export const makePitch = (note, alt = 0) => ({ note, alt });
+export const pitchMidi = (p) => p.note.midi + p.alt;
+export const pitchKey = (p) => `${p.note.label}${p.alt > 0 ? "#" : p.alt < 0 ? "b" : ""}`;
+export const pitchSign = (p) => (p.alt > 0 ? "#" : p.alt < 0 ? "b" : null);
+
+export function pitchName(p, notation) {
+  const base = noteName(p.note, notation);
+  return base + (p.alt > 0 ? "♯" : p.alt < 0 ? "♭" : "");
+}
+
+/* Les degrés qui portent une altération dans la musique tonale : on
+   n'écrit ni Mi♯ ni Fa♭ dans un exercice d'initiation, ils existent mais
+   n'apprennent rien d'utile ici. */
+const SHARPABLE = [0, 1, 3, 4, 5];   // Do Ré Fa Sol La
+const FLATABLE = [1, 2, 4, 5, 6];    // Ré Mi Sol La Si
+
+/** Développe une liste de notes en hauteurs altérées jouables. */
+export function withAlterations(notes, { sharps = true, flats = true } = {}) {
+  const out = notes.map((n) => makePitch(n, 0));
+  for (const n of notes) {
+    if (sharps && SHARPABLE.includes(n.step)) out.push(makePitch(n, 1));
+    if (flats && FLATABLE.includes(n.step)) out.push(makePitch(n, -1));
+  }
+  return out;
+}
 
 /* ============================================================
    LE MANCHE
@@ -123,5 +201,53 @@ export const RANGES = {
 };
 
 export const DIFFICULTIES = ["debutant", "intermediaire", "avance"];
+
+/* ============================================================
+   TESSITURES PAR CLEF
+
+   Lire la tessiture du violon en clé d'ut placerait toutes les notes
+   au-dessus de la portée : l'exercice serait illisible et sans intérêt.
+   Chaque clef a donc son instrument — alto pour l'ut 3e, violoncelle
+   pour la clé de fa — avec les mêmes trois paliers.
+   ============================================================ */
+const between = (a, b) => {
+  const lo = BY_LABEL.get(a).midi;
+  const hi = BY_LABEL.get(b).midi;
+  return ALL_NOTES.filter((n) => n.midi >= lo && n.midi <= hi);
+};
+
+export const RANGES_BY_CLEF = {
+  sol: RANGES,
+  ut3: {
+    debutant: {
+      label: "Débutant", notes: between("Do3", "La4"),
+      hint: "Les cordes de l'alto, autour de la portée",
+    },
+    intermediaire: {
+      label: "Intermédiaire", notes: between("Do3", "Mi5"),
+      hint: "La première position de l'alto",
+    },
+    avance: {
+      label: "Avancé", notes: between("Do3", "La5"),
+      hint: "La tessiture usuelle de l'alto",
+    },
+  },
+  fa: {
+    debutant: {
+      label: "Débutant", notes: between("Do2", "Ré3"),
+      hint: "Les cordes graves, autour de la portée",
+    },
+    intermediaire: {
+      label: "Intermédiaire", notes: between("Do2", "La3"),
+      hint: "La première position du violoncelle",
+    },
+    avance: {
+      label: "Avancé", notes: between("Do2", "Mi4"),
+      hint: "La tessiture usuelle du violoncelle",
+    },
+  },
+};
+
+export const rangesFor = (clef = "sol") => RANGES_BY_CLEF[clef] || RANGES;
 
 export const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);

@@ -158,6 +158,53 @@ export const UNITS = [
     ],
   },
   {
+    id: "u75",
+    title: "Lire en continu",
+    hint: "Une mesure entière, et le rythme dans les doigts",
+    tone: "var(--blue)",
+    lessons: [
+      {
+        id: "u75l1", title: "Quatre notes à la suite", exercise: "mesure",
+        pool: merge(stringNotes("re"), stringNotes("la")), total: 6,
+      },
+      {
+        id: "u75l2", title: "Toute la première position", exercise: "mesure",
+        pool: merge(...byString.map((s) => s.notes)), total: 8,
+      },
+      { id: "u75l3", title: "Taper le rythme", exercise: "dictee", difficulty: "debutant", total: 6 },
+      { id: "u75l4", title: "Point d'étape", exercise: "dictee", difficulty: "intermediaire", total: 8, checkpoint: true },
+    ],
+  },
+  {
+    id: "u9",
+    title: "Dièses et bémols",
+    hint: "Les altérations, puis les armures",
+    tone: "var(--brick)",
+    lessons: [
+      {
+        id: "u9l1", title: "Les altérations", exercise: "notes",
+        pool: merge(stringNotes("re"), stringNotes("la")), total: 10, alterations: true,
+      },
+      {
+        id: "u9l2", title: "Sur toute la position", exercise: "notes",
+        pool: merge(...byString.map((s) => s.notes)), total: 12, alterations: true,
+      },
+      { id: "u9l3", title: "Une, deux, trois altérations", exercise: "armures", difficulty: "debutant", total: 8 },
+      { id: "u9l4", title: "Tout le cycle des quintes", exercise: "armures", difficulty: "intermediaire", total: 10 },
+      { id: "u9l5", title: "Point d'étape", exercise: "armures", difficulty: "avance", total: 12, checkpoint: true },
+    ],
+  },
+  {
+    id: "u10",
+    title: "Produire l'intervalle",
+    hint: "Le chanter ou le jouer, micro allumé",
+    tone: "var(--mustard)",
+    lessons: [
+      { id: "u10l1", title: "Quarte, quinte, octave", exercise: "chanter", difficulty: "debutant", total: 6 },
+      { id: "u10l2", title: "Tierces et sixtes", exercise: "chanter", difficulty: "intermediaire", total: 8 },
+    ],
+  },
+  {
     id: "u8",
     title: "Au-delà de la première position",
     hint: "Toute la tessiture",
@@ -195,6 +242,26 @@ export function lessonStates(done) {
 export function nextLesson(done) {
   const states = lessonStates(done);
   return states.find((l) => l.state === "ouvert") || states[states.length - 1];
+}
+
+/** Le sac réuni d'une unité, pour l'épreuve légendaire. */
+export function unitLegendary(unitId) {
+  const unit = UNITS.find((u) => u.id === unitId);
+  if (!unit) return null;
+  const lessons = unit.lessons;
+  const withPool = lessons.filter((l) => l.pool);
+  const pool = withPool.length ? merge(...withPool.map((l) => l.pool)) : null;
+  // l'exercice le plus représenté dans l'unité donne le ton de l'épreuve
+  const counts = {};
+  for (const l of lessons) counts[l.exercise] = (counts[l.exercise] || 0) + 1;
+  const exercise = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+  const difficulty = lessons.find((l) => l.difficulty)?.difficulty || "intermediaire";
+  return {
+    unitId, exercise, pool, difficulty,
+    lessonIds: lessons.map((l) => l.id),
+    total: Math.max(10, lessons.length * 3),
+    title: unit.title,
+  };
 }
 
 export function unitProgress(done, unitId) {

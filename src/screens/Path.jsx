@@ -2,7 +2,9 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { Btn, Card } from "../ui/kit.jsx";
 import { Mascot } from "../ui/Mascot.jsx";
 import { NoteFigure } from "../ui/Glyphs.jsx";
-import { UNITS, lessonStates, nextLesson, unitProgress } from "../lesson/curriculum.js";
+import {
+  UNITS, lessonStates, nextLesson, unitLegendary, unitProgress,
+} from "../lesson/curriculum.js";
 import { EXERCISES } from "./Lesson.jsx";
 import { weakItems } from "../state/progress.js";
 
@@ -118,7 +120,7 @@ function PathNode({ lesson, state, offset, onStart, isNext, tone }) {
   );
 }
 
-export default function Path({ progress, onStart, onPractiseWeak }) {
+export default function Path({ progress, onStart, onPractiseWeak, onLegendary }) {
   const states = useMemo(() => lessonStates(progress.path.done), [progress.path.done]);
   const next = useMemo(() => nextLesson(progress.path.done), [progress.path.done]);
   const nextRef = useRef(null);
@@ -161,6 +163,7 @@ export default function Path({ progress, onStart, onPractiseWeak }) {
 
       {UNITS.map((unit) => {
         const up = unitProgress(progress.path.done, unit.id);
+        const allGold = unit.lessons.every((l) => progress.path.done[l.id] === "or");
         return (
           <section key={unit.id} className="flex flex-col gap-3">
             <div className="flex items-center gap-3 mt-2">
@@ -170,8 +173,9 @@ export default function Path({ progress, onStart, onPractiseWeak }) {
                 </div>
                 <div className="text-xs" style={{ color: "var(--ink-3)" }}>{unit.hint}</div>
               </div>
-              <span className="chip mono" style={{ color: "var(--ink-3)" }}>
-                {up.done}/{up.total}
+              <span className="chip mono"
+                style={{ color: allGold ? "var(--mustard)" : "var(--ink-3)" }}>
+                {allGold ? "en or" : `${up.done}/${up.total}`}
               </span>
             </div>
 
@@ -189,6 +193,24 @@ export default function Path({ progress, onStart, onPractiseWeak }) {
                   : node;
               })}
             </div>
+
+            {up.complete && !allGold && (
+              <Card className="p-3 flex items-center gap-3">
+                <span aria-hidden style={{ color: "var(--mustard)" }}>
+                  <svg width="26" height="26" viewBox="0 0 24 24">
+                    <path d="M12 2.6l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.7 6.4 19.8l1.3-6.3L3 9.2l6.3-.7z"
+                      fill="currentColor" stroke="var(--edge)" strokeWidth="1.6" strokeLinejoin="round" />
+                  </svg>
+                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="display" style={{ fontSize: "0.95rem" }}>Épreuve légendaire</div>
+                  <div className="text-xs" style={{ color: "var(--ink-2)" }}>
+                    Sans la moindre erreur et au chrono : l'unité passe en or
+                  </div>
+                </div>
+                <Btn size="sm" tone="gold" onClick={() => onLegendary(unit.id)}>Tenter</Btn>
+              </Card>
+            )}
           </section>
         );
       })}

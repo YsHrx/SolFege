@@ -44,7 +44,7 @@ Un record est tenu pour chaque combinaison exercice × format × difficulté.
 
 ---
 
-## Les exercices
+## Les onze exercices
 
 ### Lecture de notes
 
@@ -58,6 +58,10 @@ pour réécouter.
 | Débutant | Les quatre cordes à vide et leurs voisines immédiates |
 | Intermédiaire | Toute la première position, 4ᵉ doigt compris — Sol3 à Si5 |
 | Avancé | Sol3 à Do7, la tessiture usuelle |
+
+Trois clefs sont disponibles — sol, ut 3ᵉ pour l'alto, fa pour le violoncelle —
+chacune avec la tessiture de son instrument. Les dièses et bémols s'activent
+séparément et font apparaître une rangée de trois modificateurs.
 
 Trois régimes de chronomètre en format Série : **libre**, **fixe** (2 à 15 s),
 et **adaptatif** — le temps se resserre de 0,25 s à chaque réussite et
@@ -78,6 +82,59 @@ croche. Avancé : plus la double-croche.
 Deux notes jouées successivement depuis une fondamentale tirée entre Ré4 et
 La4. Débutant : unisson, quarte, quinte, octave. Intermédiaire : huit
 intervalles. Avancé : les treize.
+
+### Écrire la note, écouter et placer
+
+Deux exercices qui partagent une portée cliquable. Le premier donne le nom et
+demande de poser la note : c'est l'autre sens du lien nom ↔ position, et il ne
+se transfère qu'à moitié depuis la lecture. Le second joue la note sans la
+montrer — dans la lecture ordinaire, la note est affichée **et** jouée en même
+temps, donc l'oreille n'y travaille jamais seule.
+
+### Lire une mesure
+
+Quatre notes à la suite, répondues dans l'ordre. C'est la vraie compétence de
+lecture à vue. La mesure ne compte que si les quatre notes sont justes.
+
+### Dictée de rythme
+
+On entend une mesure de quatre temps, on la retape sur un gros bouton — ou à la
+barre d'espace. Tolérance d'un quart de temps sur chaque attaque, soit environ
+155 ms au tempo de référence.
+
+### Armures et tonalités
+
+Une armure s'affiche, on nomme la tonalité majeure. La relative mineure est
+donnée à la correction : elle partage l'armure, et l'oublier est une confusion
+classique. Le nombre d'altérations n'apparaît qu'après la réponse — l'afficher
+avant reviendrait à la donner.
+
+### Le doigté
+
+Une note s'affiche, on désigne la corde et le doigt sur un manche dessiné.
+L'exercice propre au violon : savoir lire une note ne sert à rien si l'on ne
+sait pas où la poser. Les notes jouables à deux endroits acceptent les deux
+réponses.
+
+### La justesse
+
+Une note s'affiche, on la joue, l'application écoute et affiche l'écart en
+cents. Il faut tenir la note à ±20 cents pendant six dixièmes de seconde : un
+passage fugace ne compte pas.
+
+La détection est une différence carrée normalisée, avec les traitements du
+navigateur coupés — annulation d'écho, réduction de bruit et gain automatique
+sont réglés pour la voix au téléphone et massacrent une note tenue. Les octaves
+fantômes sont écartées et le pic est interpolé : mesuré sur signaux
+synthétiques, l'écart reste sous le demi-cent de Sol3 à Do7.
+
+### Chanter l'intervalle
+
+On entend une fondamentale, on doit produire l'intervalle demandé — à l'archet
+ou à la voix. Tolérance de ±35 cents, et l'octave est acceptée : chanter une
+quinte une octave plus bas reste une quinte.
+
+Rien de ce qui est capté par le micro ne sort du navigateur, dans les deux cas.
 
 ---
 
@@ -206,12 +263,18 @@ sont auto-hébergées : aucune requête vers un CDN.
 
 ---
 
+## Le niveau légendaire
+
+Une unité entièrement terminée peut être retentée d'un bloc : le sac réuni de
+ses leçons, au chronomètre adaptatif, sans la moindre erreur. Réussie, elle
+passe entièrement en or. C'est ce qui donne une raison de revenir sur ce qu'on
+sait déjà.
+
 ## Ce qui reste à faire
 
-Voir [ROADMAP.md](ROADMAP.md). L'essentiel : de nouveaux formats d'exercice —
-écrire la note sur la portée, lire une mesure entière, le doigté sur un manche
-dessiné, et surtout **la justesse au micro**, qui est la fonctionnalité qui
-distinguerait vraiment cet outil de ce qui existe déjà.
+Voir [ROADMAP.md](ROADMAP.md) — la feuille de route de la refonte est terminée,
+les lignes qui restent sont des pistes ouvertes : deuxième et troisième
+positions, doubles cordes, mesures composées.
 
 ---
 

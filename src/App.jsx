@@ -4,7 +4,7 @@ import {
   applyLesson, dayKey, lessonsToday, loadProgress, recordKey,
   resetProgress, saveProgress, streakAlive, weakItems, xpFor, xpForLevel,
 } from "./state/progress.js";
-import { ALL_LESSONS, nextLesson } from "./lesson/curriculum.js";
+import { ALL_LESSONS, nextLesson, unitLegendary } from "./lesson/curriculum.js";
 import { Btn, Card, Segmented, StaffLines } from "./ui/kit.jsx";
 import { Mascot } from "./ui/Mascot.jsx";
 import Lesson, { EXERCISES } from "./screens/Lesson.jsx";
@@ -199,8 +199,29 @@ export default function App() {
       total: lesson.total,
       format: "serie",
       timerMode: lesson.timerMode || "libre",
+      alterations: !!lesson.alterations,
+      clef: lesson.clef || "sol",
       lessonId: lesson.id,
       lessonTitle: `${lesson.unitTitle ?? ""} · ${lesson.title}`.replace(/^ · /, ""),
+    });
+  }, [startLesson]);
+
+  /* L'épreuve légendaire : le sac réuni de l'unité, au chronomètre
+     adaptatif, et une seule erreur suffit à la manquer — c'est le format
+     Mort subite avec un objectif de longueur. */
+  const startLegendary = useCallback((unitId) => {
+    const l = unitLegendary(unitId);
+    if (!l) return;
+    startLesson({
+      mode: "progression",
+      exercise: l.exercise,
+      difficulty: l.difficulty,
+      pool: l.pool || undefined,
+      total: l.total,
+      format: "serie",
+      timerMode: ["notes", "ecrire", "ecouter"].includes(l.exercise) ? "adaptatif" : "libre",
+      legendaryLessons: l.lessonIds,
+      lessonTitle: `Épreuve légendaire · ${l.title}`,
     });
   }, [startLesson]);
 
@@ -237,6 +258,7 @@ export default function App() {
       difficulty: cfg.difficulty,
       mode: cfg.mode,
       lessonId: cfg.lessonId,
+      legendaryLessons: cfg.legendaryLessons,
       recordKey: key,
     };
 
@@ -248,9 +270,14 @@ export default function App() {
       (raw.itemResults || []).filter((r) => !r.ok).map((r) => r.key)
     )];
 
+    const goldWon =
+      !!cfg.legendaryLessons && !raw.abandoned && !raw.failed
+      && raw.total > 0 && raw.correct === raw.total;
+
     setResult({
       ...payload,
       xpGained,
+      goldWon,
       misses,
       newRecord: !!key && typeof raw.score === "number" && raw.score > previousRecord && raw.score > 0,
       streak: after.days.streak,
@@ -305,7 +332,8 @@ export default function App() {
           failed={audio.samplesFailed} />
 
         {mode === "progression" && (
-          <Path progress={progress} onStart={startPathLesson} onPractiseWeak={practiseWeak} />
+          <Path progress={progress} onStart={startPathLesson}
+            onPractiseWeak={practiseWeak} onLegendary={startLegendary} />
         )}
 
         {mode === "entrainement" && (

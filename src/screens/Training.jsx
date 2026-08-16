@@ -3,7 +3,7 @@ import { Btn, Card, Segmented } from "../ui/kit.jsx";
 import { NoteFigure } from "../ui/Glyphs.jsx";
 import { EXERCISES } from "./Lesson.jsx";
 import { FORMATS } from "../lesson/engine.js";
-import { DIFFICULTIES, RANGES } from "../music/notes.js";
+import { CLEFS, DIFFICULTIES, RANGES, rangesFor } from "../music/notes.js";
 import { RHYTHM_POOL } from "../music/rhythm.js";
 import { INTERVAL_POOL } from "../music/intervals.js";
 import { accuracyByExercise, recordKey } from "../state/progress.js";
@@ -110,15 +110,20 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
   const [seconds, setSeconds] = useState(60);
   const [timerMode, setTimerMode] = useState("libre");
   const [fixedSeconds, setFixedSeconds] = useState(6);
+  const [alterations, setAlterations] = useState(false);
+  const [clef, setClef] = useState("sol");
 
   const showTimer = ["notes", "ecrire", "ecouter"].includes(exercise) && format === "serie";
+  // altérations et clefs ne concernent que la lecture de notes : les poser
+  // sur les autres exercices demanderait d'y adapter la saisie
+  const showReadingOptions = exercise === "notes";
   const showDifficulty = !ex.fixedDifficulty;
   const record = progress.records[recordKey(exercise, format, difficulty)];
 
   const poolHint =
     exercise === "rythme" ? RHYTHM_POOL[difficulty].map((r) => r.label).join(", ")
       : exercise === "intervalles" ? `${INTERVAL_POOL[difficulty].length} intervalles testés`
-        : RANGES[difficulty].hint;
+        : (exercise === "notes" ? rangesFor(clef) : RANGES)[difficulty].hint;
 
   const start = () => onStart({
     exercise, difficulty, format,
@@ -126,6 +131,8 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
     total: format === "serie" ? (exercise === "notes" ? 12 : 10) : undefined,
     timerMode: showTimer ? timerMode : "libre",
     fixedSeconds,
+    alterations: showReadingOptions ? alterations : false,
+    clef: showReadingOptions ? clef : "sol",
   });
 
   return (
@@ -210,6 +217,30 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
             {timerMode === "libre" && "Aucune limite : la note suivante arrive dès que vous répondez."}
             {timerMode === "adaptatif" && "Le temps se resserre à chaque réussite, s'élargit à chaque erreur."}
             {timerMode === "fixe" && "Le même temps à chaque note."}
+          </p>
+        </div>
+      )}
+
+      {showReadingOptions && (
+        <div className="flex flex-col gap-2">
+          <span className="label">Clef</span>
+          <Segmented value={clef} onChange={setClef} ariaLabel="Clef"
+            options={Object.values(CLEFS).map((c) => ({ value: c.id, label: c.label }))} />
+          <button type="button" className="btn btn-sm"
+            onClick={() => setAlterations((a) => !a)} aria-pressed={alterations}
+            style={{
+              justifyContent: "space-between",
+              background: alterations ? "var(--blue)" : "var(--paper-2)",
+              color: alterations ? "var(--on-color)" : "var(--ink)",
+            }}>
+            Dièses et bémols
+            <span aria-hidden style={{ fontSize: "1.1rem" }}>{alterations ? "♯ ♭" : "♮"}</span>
+          </button>
+          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+            {clef === "sol" ? "La clé du violon."
+              : clef === "ut3" ? "La clé de l'alto — utile si vous en jouez aussi."
+                : "La clé du violoncelle et de la contrebasse."}
+            {alterations ? " Les altérations ajoutent une rangée de modificateurs." : ""}
           </p>
         </div>
       )}

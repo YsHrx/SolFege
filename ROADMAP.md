@@ -80,21 +80,21 @@ mais seul le mode Progression fait avancer le chemin.
 - [x] ~~Gel de série — un jour de rattrapage gagné toutes les dix leçons~~
 - [x] ~~Calendrier du mois avec les jours pratiqués~~
 - [x] ~~Bouton « Renforcer mes points faibles » — une leçon bâtie sur les items les plus ratés~~
-- [ ] Niveau légendaire : refaire une unité acquise sans erreur et au chrono, pour la passer en or
+- [x] ~~Niveau légendaire : refaire une unité acquise sans erreur et au chrono, pour la passer en or~~
 - [x] ~~Courbe de progression alimentée par l'historique~~ *(corrige : `history` était écrit et jamais lu)*
 
 ## Phase 5 — Nouveaux exercices
 
 - [x] ~~**Écrire la note** — glisser une tête de note sur la portée~~
-- [ ] **Lire une mesure** — quatre notes à la suite, réponse en rythme
+- [x] ~~**Lire une mesure** — quatre notes à la suite, réponse en rythme~~
 - [x] ~~**Le doigté** — corde et doigt (0 à 4) sur un manche dessiné~~ *(propre au violon)*
 - [x] ~~**Écouter et placer** — la note est jouée, pas affichée~~
-- [ ] **Dictée de rythme** — taper le rythme entendu sur un gros bouton
+- [x] ~~**Dictée de rythme** — taper le rythme entendu sur un gros bouton~~
 - [x] ~~**La justesse au micro** — détection de hauteur par autocorrélation, curseur en cents~~ *(propre au violon)*
-- [ ] **Chanter l'intervalle** — produire l'intervalle demandé, validé au micro
-- [ ] **Armures et tonalités** — deux dièses → Ré majeur
-- [ ] Altérations (dièses, bémols, bécarres) dans la lecture de notes
-- [ ] Clef d'ut 3ᵉ ligne, pour l'alto
+- [x] ~~**Chanter l'intervalle** — produire l'intervalle demandé, validé au micro~~
+- [x] ~~**Armures et tonalités** — deux dièses → Ré majeur~~
+- [x] ~~Altérations (dièses, bémols, bécarres) dans la lecture de notes~~
+- [x] ~~Clef d'ut 3ᵉ ligne, pour l'alto~~
 
 ## Phase 6 — Animations
 
@@ -125,9 +125,18 @@ mais seul le mode Progression fait avancer le chemin.
 
 ---
 
-## Ordre d'exécution
+## État
 
-Les phases 0 à 3 forment un premier ensemble livrable : nouvelle direction
-artistique, mode Entraînement complet avec ses trois formats de partie, les
-trois exercices existants portés. La phase 4 ajoute le mode Progression, la
-phase 5 étoffe le contenu, les phases 6 et 7 polissent.
+Les huit phases sont terminées. L'application compte onze exercices, trois
+formats de partie, un chemin de treize unités et un mode Entraînement complet.
+
+## Pistes pour la suite
+
+Rien de tout cela n'était dans la revue initiale ; à verser au fur et à mesure.
+
+- [ ] Deuxième et troisième positions sur le manche
+- [ ] Doubles cordes : deux notes simultanées, à la justesse
+- [ ] Lecture rythmique à plusieurs valeurs par mesure, avec silences
+- [ ] Mesures composées (6/8, 9/8) et changements de tempo
+- [ ] Import d'une progression exportée
+- [ ] Choix du tempo de référence dans les réglages

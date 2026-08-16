@@ -65,7 +65,8 @@ export default function Results({ result, onHome, onRetry, onNext }) {
   const [step, setStep] = useState(0);
   const pct = result.total > 0 ? Math.round((result.correct / result.total) * 100) : 0;
   const v = verdict(pct, result.abandoned, result.format, result.score, result.failed);
-  const celebrate = !result.abandoned && !result.failed && (pct === 100 || result.newRecord);
+  const celebrate =
+    !result.abandoned && !result.failed && (pct === 100 || result.newRecord || result.goldWon);
 
   useEffect(() => {
     const a = setTimeout(() => setStep(1), 620);
@@ -90,6 +91,12 @@ export default function Results({ result, onHome, onRetry, onNext }) {
           La leçon s'arrête là et reste à refaire. Vous pouvez couper les trois
           fausses notes dans les réglages pour vous entraîner sans limite.
         </p>
+      )}
+
+      {result.goldWon && (
+        <span className="chip anim-pop" style={{ color: "var(--mustard)" }}>
+          unité passée en or
+        </span>
       )}
 
       {result.newRecord && (
