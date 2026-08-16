@@ -201,6 +201,7 @@ export default function App() {
       timerMode: lesson.timerMode || "libre",
       alterations: !!lesson.alterations,
       clef: lesson.clef || "sol",
+      position: lesson.position || 1,
       lessonId: lesson.id,
       lessonTitle: `${lesson.unitTitle ?? ""} · ${lesson.title}`.replace(/^ · /, ""),
     });
@@ -317,6 +318,7 @@ export default function App() {
       <div className="min-h-screen pt-6">
         <Settings progress={progress} onBack={goHome}
           onChange={(settings) => setProgress((p) => ({ ...p, settings }))}
+          onImport={(next) => { setProgress(next); goHome(); }}
           onReset={() => { setProgress(resetProgress()); goHome(); }} />
       </div>
     );

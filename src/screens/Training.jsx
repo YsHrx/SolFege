@@ -3,7 +3,7 @@ import { Btn, Card, Segmented } from "../ui/kit.jsx";
 import { NoteFigure } from "../ui/Glyphs.jsx";
 import { EXERCISES } from "./Lesson.jsx";
 import { FORMATS } from "../lesson/engine.js";
-import { CLEFS, DIFFICULTIES, RANGES, rangesFor } from "../music/notes.js";
+import { CLEFS, DIFFICULTIES, POSITIONS, RANGES, rangesFor } from "../music/notes.js";
 import { RHYTHM_POOL } from "../music/rhythm.js";
 import { INTERVAL_POOL } from "../music/intervals.js";
 import { accuracyByExercise, recordKey } from "../state/progress.js";
@@ -112,6 +112,7 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
   const [fixedSeconds, setFixedSeconds] = useState(6);
   const [alterations, setAlterations] = useState(false);
   const [clef, setClef] = useState("sol");
+  const [position, setPosition] = useState(1);
 
   const showTimer = ["notes", "ecrire", "ecouter"].includes(exercise) && format === "serie";
   // altérations et clefs ne concernent que la lecture de notes : les poser
@@ -133,6 +134,7 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
     fixedSeconds,
     alterations: showReadingOptions ? alterations : false,
     clef: showReadingOptions ? clef : "sol",
+    position: ex.positions ? position : 1,
   });
 
   return (
@@ -189,11 +191,19 @@ export function TrainingSetup({ exercise, progress, onStart, onBack }) {
             options={DIFFICULTIES.map((d) => ({ value: d, label: RANGES[d].label }))} />
           <p className="text-xs" style={{ color: "var(--ink-3)" }}>{poolHint}</p>
         </div>
-      ) : (
-        <p className="text-xs" style={{ color: "var(--ink-3)" }}>
-          Toute la première position — c'est le cadre de l'exercice, il n'y a
-          pas de difficulté à régler.
-        </p>
+      ) : null}
+
+      {ex.positions && (
+        <div className="flex flex-col gap-2">
+          <span className="label">Position de la main gauche</span>
+          <Segmented value={position} onChange={setPosition} ariaLabel="Position"
+            options={POSITIONS.map((p) => ({ value: p.id, label: p.id === 1 ? "1re" : `${p.id}e` }))} />
+          <p className="text-xs" style={{ color: "var(--ink-3)" }}>
+            {position === 1
+              ? "La position de départ : le 1er doigt un degré au-dessus de la corde à vide."
+              : `La main a glissé vers l'aigu de ${position - 1} degré${position > 2 ? "s" : ""}.`}
+          </p>
+        </div>
       )}
 
       {showTimer && (

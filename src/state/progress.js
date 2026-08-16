@@ -58,6 +58,7 @@ export const DEFAULT = {
     sound: true,
     hearts: true,         // les trois fausses notes
     goal: 3,              // leçons par jour
+    bpm: 97,              // tempo de référence des exercices rythmiques
   },
 };
 
@@ -95,6 +96,7 @@ function normalise(saved) {
       sound: s.sound !== false,
       hearts: s.hearts !== false,
       goal: GOALS.includes(s.goal) ? s.goal : 3,
+      bpm: Math.min(140, Math.max(50, num(s.bpm, 97))),
     },
   };
 }
@@ -147,6 +149,18 @@ export function loadProgress() {
 
 export function saveProgress(p) {
   try { localStorage.setItem(KEY, JSON.stringify(p)); } catch { /* quota plein */ }
+}
+
+/** Relit une progression exportée. On la fait passer par la même
+    normalisation que la sauvegarde locale : un fichier trafiqué ou issu
+    d'une version antérieure ne doit pas pouvoir casser l'accueil. */
+export function importProgress(json) {
+  let parsed;
+  try { parsed = JSON.parse(json); } catch { return null; }
+  if (!parsed || typeof parsed !== "object") return null;
+  const clean = parsed.v === 5 ? normalise(parsed) : normalise(migrateV4(parsed));
+  saveProgress(clean);
+  return clean;
 }
 
 export function resetProgress() {

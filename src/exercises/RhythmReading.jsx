@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { NoteFigure } from "../ui/Glyphs.jsx";
 import { Btn, Card } from "../ui/kit.jsx";
-import { BEAT_MS, RHYTHM_POOL, rhythmById } from "../music/rhythm.js";
+import { RHYTHM_POOL, beatMsFor, rhythmById } from "../music/rhythm.js";
 import { distractors, makePicker } from "../state/srs.js";
 
 /* ============================================================
@@ -31,7 +31,7 @@ export function makeRhythmDraw(difficulty, items) {
 
 export const rhythmIsCorrect = (q, v) => v === q.value.id;
 
-export function RhythmView({ lesson, audio, soundOn }) {
+export function RhythmView({ lesson, audio, soundOn, bpm }) {
   const { question, phase, wasCorrect, answered, submit, isAsking } = lesson;
   const [playing, setPlaying] = useState(false);
   const [beat, setBeat] = useState(-1);
@@ -61,7 +61,7 @@ export function RhythmView({ lesson, audio, soundOn }) {
     const beats = rhythm.beats;
     const perRep = Math.max(4, Math.ceil(beats) + 1);
     const REPS = 2;
-    const beatS = BEAT_MS / 1000;
+    const beatS = beatMsFor(bpm) / 1000;
     const t0 = audio.audioNow();
 
     for (let rep = 0; rep < REPS; rep++) {
@@ -84,7 +84,7 @@ export function RhythmView({ lesson, audio, soundOn }) {
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
-  }, [audio, playing, stop]);
+  }, [audio, playing, stop, bpm]);
 
   // relance à chaque nouvelle question
   const stamp = `${lesson.index}:${question.value.id}`;

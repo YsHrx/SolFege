@@ -130,28 +130,72 @@ export const STRINGS = [
   { id: "mi", label: "Mi", open: "Mi5", color: "var(--blue)" },
 ];
 
-/* Les quatre doigts de la première position, en degrés diatoniques
-   au-dessus de la corde à vide. */
-const FIRST_POSITION_FINGERS = [1, 2, 3, 4];
+/* Les positions du violon, exprimées en degrés diatoniques : la
+   première position pose le 1er doigt un degré au-dessus de la corde à
+   vide, la deuxième deux degrés, la troisième trois. C'est une
+   simplification — les positions se comptent en demi-tons et la
+   deuxième a des variantes — mais elle correspond à ce qu'on enseigne
+   d'abord, et elle se lit sans ambiguïté sur une portée. */
+export const POSITIONS = [
+  { id: 1, label: "1re position", shift: 0 },
+  { id: 2, label: "2e position", shift: 1 },
+  { id: 3, label: "3e position", shift: 2 },
+];
 
-/** Toutes les notes atteignables en première position, corde par corde. */
-export function firstPositionByString() {
+const FINGERS = [1, 2, 3, 4];
+
+/** Les notes atteignables dans une position donnée, corde par corde. */
+export function positionByString(position = 1) {
+  const p = POSITIONS.find((x) => x.id === position) || POSITIONS[0];
   return STRINGS.map((s) => {
     const open = BY_LABEL.get(s.open);
     const notes = [open];
-    for (const f of FIRST_POSITION_FINGERS) {
-      notes.push(ALL_NOTES.find((n) => n.diatonic === open.diatonic + f));
+    for (const f of FINGERS) {
+      notes.push(ALL_NOTES.find((n) => n.diatonic === open.diatonic + f + p.shift));
     }
-    return { ...s, openNote: open, notes };
+    return { ...s, openNote: open, notes, position: p.id };
   });
 }
 
-/** Où jouer une note en première position : corde et doigt. */
-export function fingeringFor(note) {
+/** Raccourci historique : la première position. */
+export const firstPositionByString = () => positionByString(1);
+
+/** Où jouer une note dans une position : corde et doigt. */
+export function fingeringFor(note, position = 1) {
   const out = [];
-  for (const s of firstPositionByString()) {
-    const i = s.notes.findIndex((n) => n.label === note.label);
-    if (i >= 0) out.push({ string: s.id, stringLabel: s.label, finger: i });
+  for (const s of positionByString(position)) {
+    const i = s.notes.findIndex((n) => n && n.label === note.label);
+    if (i >= 0) out.push({ string: s.id, stringLabel: s.label, finger: i, position });
+  }
+  return out;
+}
+
+/* ============================================================
+   DOUBLES CORDES
+
+   Deux notes jouées ensemble sur deux cordes voisines. On se limite aux
+   couples réellement tenables : cordes adjacentes, et un écart de doigts
+   qui ne demande pas d'extension.
+   ============================================================ */
+export function doubleStops(position = 1) {
+  const strings = positionByString(position);
+  const out = [];
+  for (let i = 0; i < strings.length - 1; i++) {
+    const low = strings[i];
+    const high = strings[i + 1];
+    for (let a = 0; a < low.notes.length; a++) {
+      for (let b = 0; b < high.notes.length; b++) {
+        if (!low.notes[a] || !high.notes[b]) continue;
+        // un doigt sur chaque corde, ou une corde à vide : au-delà de
+        // deux crans d'écart, la main ne suit pas
+        if (a > 0 && b > 0 && Math.abs(a - b) > 2) continue;
+        out.push({
+          low: low.notes[a], high: high.notes[b],
+          lowString: low.id, highString: high.id,
+          lowFinger: a, highFinger: b,
+        });
+      }
+    }
   }
   return out;
 }

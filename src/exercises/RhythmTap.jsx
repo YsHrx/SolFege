@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { NoteFigure } from "../ui/Glyphs.jsx";
 import { Btn, Card } from "../ui/kit.jsx";
-import { BEAT_MS, RHYTHM_POOL } from "../music/rhythm.js";
+import { RHYTHM_POOL, beatMsFor } from "../music/rhythm.js";
 import { shuffle } from "../state/srs.js";
 
 /* ============================================================
@@ -56,7 +56,7 @@ export function makeTapDraw(difficulty) {
 
 export const tapIsCorrect = (q, v) => v === true;
 
-export function RhythmTapView({ lesson, audio, soundOn }) {
+export function RhythmTapView({ lesson, audio, soundOn, bpm }) {
   const { question, phase, wasCorrect, submit, isAsking } = lesson;
   const { seq, onsets } = question;
 
@@ -69,6 +69,10 @@ export function RhythmTapView({ lesson, audio, soundOn }) {
   const settled = useRef(false);
   const liveRef = useRef(question);
   liveRef.current = question;
+  // le tempo est lu par ref : le jugement se fait dans une fermeture
+  // créée bien avant la frappe
+  const bpmRef = useRef(bpm);
+  bpmRef.current = bpm;
 
   const stopLoop = () => { tokenRef.current += 1; cancelAnimationFrame(rafRef.current); setBeat(-1); };
 
@@ -76,7 +80,7 @@ export function RhythmTapView({ lesson, audio, soundOn }) {
     stopLoop();
     const token = ++tokenRef.current;
     setStage("ecoute");
-    const beatS = BEAT_MS / 1000;
+    const beatS = beatMsFor(bpm) / 1000;
     const q = liveRef.current;
 
     // une mesure de décompte, puis la mesure jouée
@@ -99,7 +103,7 @@ export function RhythmTapView({ lesson, audio, soundOn }) {
       rafRef.current = requestAnimationFrame(loop);
     };
     rafRef.current = requestAnimationFrame(loop);
-  }, [audio]);
+  }, [audio, bpm]);
 
   const stamp = `${lesson.index}:${question.key}`;
   const lastStamp = useRef(null);
@@ -124,7 +128,7 @@ export function RhythmTapView({ lesson, audio, soundOn }) {
     // temps de réaction
     const t0 = list[0];
     return q.onsets.every((expected, i) => {
-      const got = (list[i] - t0) / BEAT_MS;
+      const got = (list[i] - t0) / beatMsFor(bpmRef.current);
       return Math.abs(got - expected) <= TOLERANCE;
     });
   }, []);

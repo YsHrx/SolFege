@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { Staff } from "../ui/Glyphs.jsx";
 import { Card } from "../ui/kit.jsx";
 import {
-  STRINGS, fingeringFor, firstPositionByString, staffPosition,
+  POSITIONS, STRINGS, fingeringFor, positionByString, staffPosition,
 } from "../music/notes.js";
 import { makePicker } from "../state/srs.js";
 
@@ -18,18 +18,21 @@ import { makePicker } from "../state/srs.js";
    acceptées, et la correction montre l'autre.
    ============================================================ */
 
-const BY_STRING = firstPositionByString();
-const PLAYABLE = [...new Set(BY_STRING.flatMap((s) => s.notes.map((n) => n.label)))];
+/* La clé de mémoire porte la position : le Ré4 en 1re et le Ré4 en 3e
+   ne demandent pas le même geste, et l'un peut être acquis quand
+   l'autre ne l'est pas. */
+export const fingeringKeyOf = (n, position = 1) => `doigte${position}:${n.label}`;
 
-export const fingeringKeyOf = (n) => `doigte:${n.label}`;
-
-export function makeFingeringDraw(items) {
-  const pool = BY_STRING.flatMap((s) => s.notes)
+export function makeFingeringDraw(items, position = 1) {
+  const byString = positionByString(position);
+  const pool = byString.flatMap((s) => s.notes)
+    .filter(Boolean)
     .filter((n, i, a) => a.findIndex((m) => m.label === n.label) === i);
-  const pick = makePicker(pool, fingeringKeyOf, items);
+  const key = (n) => fingeringKeyOf(n, position);
+  const pick = makePicker(pool, key, items);
   return (prev) => {
     const note = pick(prev ? prev.note : null);
-    return { key: fingeringKeyOf(note), note, answers: fingeringFor(note) };
+    return { key: key(note), note, position, answers: fingeringFor(note, position) };
   };
 }
 
@@ -54,6 +57,8 @@ const FINGER_Y = [0, 0.22, 0.42, 0.6, 0.79];
 export function FingerboardView({ lesson, audio, soundOn }) {
   const { question, phase, wasCorrect, answered, submit, isAsking } = lesson;
   const note = question.note;
+  const position = question.position || 1;
+  const posLabel = (POSITIONS.find((p) => p.id === position) || POSITIONS[0]).label;
 
   const stamp = `${lesson.index}:${note.label}`;
   const lastStamp = useRef(null);
@@ -85,7 +90,7 @@ export function FingerboardView({ lesson, audio, soundOn }) {
           ariaLabel={`Où joue-t-on ${note.label} ?`} />
       </Card>
 
-      <p className="label text-center">Corde et doigt, en première position</p>
+      <p className="label text-center">Corde et doigt, en {posLabel.toLowerCase()}</p>
 
       <Card className="w-full p-2">
         <svg viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Manche du violon"
@@ -106,6 +111,18 @@ export function FingerboardView({ lesson, audio, soundOn }) {
               y1={NECK_TOP - 34} y2={NECK_BOTTOM + 12}
               stroke="var(--ink-3)" strokeWidth={4.4 - i * 0.8} strokeLinecap="round" />
           ))}
+
+          {/* repère de position : en 2e et 3e, la main a glissé vers
+              l'aigu, et le dire évite de chercher la 1re à tort */}
+          {position > 1 && (
+            <text x={W / 2} y={16} textAnchor="middle"
+              style={{
+                fontSize: 12, fontFamily: "PlexMono, monospace",
+                fill: "var(--ink-3)", letterSpacing: "0.08em",
+              }}>
+              {posLabel.toUpperCase()}
+            </text>
+          )}
 
           {/* nom des cordes */}
           {STRINGS.map((s, i) => (
@@ -161,4 +178,4 @@ export function FingerboardView({ lesson, audio, soundOn }) {
   );
 }
 
-export { PLAYABLE };
+

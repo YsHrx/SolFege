@@ -24,6 +24,12 @@ import { RhythmTapView, makeTapDraw, tapIsCorrect } from "../exercises/RhythmTap
 import {
   SingIntervalView, makeSingDraw, singIsCorrect,
 } from "../exercises/SingInterval.jsx";
+import {
+  MeterReadingView, makeMeterDraw, meterIsCorrect,
+} from "../exercises/MeterReading.jsx";
+import {
+  DoubleStopsView, makeDoubleDraw, doubleIsCorrect,
+} from "../exercises/DoubleStops.jsx";
 
 /* ============================================================
    DÉROULÉ D'UNE LEÇON
@@ -115,6 +121,24 @@ export const EXERCISES = {
     needsSound: false,
     needsMic: true,
   },
+  mesures: {
+    id: "mesures",
+    title: "Reconnaître la mesure",
+    short: "Mesures",
+    hint: "Une mesure entière, silences et chiffrages compris",
+    tone: "var(--moss)",
+    needsSound: true,
+  },
+  doubles: {
+    id: "doubles",
+    title: "Doubles cordes",
+    short: "Doubles",
+    hint: "Deux notes tenues ensemble — le micro vérifie les deux",
+    tone: "var(--brick)",
+    needsSound: false,
+    needsMic: true,
+    positions: true,
+  },
   doigte: {
     id: "doigte",
     title: "Le doigté",
@@ -122,7 +146,8 @@ export const EXERCISES = {
     hint: "Trouver la corde et le doigt sur le manche",
     tone: "var(--moss)",
     needsSound: false,
-    fixedDifficulty: true, // la première position, un point c'est tout
+    fixedDifficulty: true, // le cadre, c'est la position choisie
+    positions: true,
   },
 };
 
@@ -134,7 +159,9 @@ export default function Lesson({ config, progress, audio, onFinish }) {
   const draw = useMemo(() => {
     if (exercise === "rythme") return makeRhythmDraw(difficulty, progress.items);
     if (exercise === "intervalles") return makeIntervalDraw(difficulty, progress.items);
-    if (exercise === "doigte") return makeFingeringDraw(progress.items);
+    if (exercise === "doigte") return makeFingeringDraw(progress.items, config.position || 1);
+    if (exercise === "mesures") return makeMeterDraw(difficulty);
+    if (exercise === "doubles") return makeDoubleDraw(progress.items, config.position || 1);
     if (exercise === "justesse") return makeIntonationDraw(difficulty, progress.items, pool);
     if (exercise === "armures") return makeKeySigDraw(difficulty, progress.items);
     if (exercise === "mesure") return makeMeasureDraw(difficulty, progress.items, pool);
@@ -155,6 +182,8 @@ export default function Lesson({ config, progress, audio, onFinish }) {
     if (exercise === "rythme") return rhythmIsCorrect(q, v);
     if (exercise === "intervalles") return intervalIsCorrect(q, v);
     if (exercise === "doigte") return fingeringIsCorrect(q, v);
+    if (exercise === "mesures") return meterIsCorrect(q, v);
+    if (exercise === "doubles") return doubleIsCorrect(q, v);
     if (exercise === "justesse") return intonationIsCorrect(q, v);
     if (exercise === "armures") return keySigIsCorrect(q, v);
     if (exercise === "mesure") return measureIsCorrect(q, v);
@@ -167,7 +196,8 @@ export default function Lesson({ config, progress, audio, onFinish }) {
   const timer = useMemo(() => {
     // on ne met pas un violoniste au chronomètre pendant qu'il cherche sa
     // justesse : l'exercice a son propre garde-fou
-    if (["justesse", "chanter", "dictee", "mesure"].includes(exercise)) return { mode: "libre" };
+    if (["justesse", "chanter", "doubles", "dictee", "mesure", "mesures"]
+      .includes(exercise)) return { mode: "libre" };
     if (format === "mort_subite") return { mode: "adaptatif", start: 7, min: 1.6, max: 7, step: 0.22 };
     if (!["notes", "ecrire", "ecouter"].includes(exercise)) return { mode: "libre" };
     if (config.timerMode === "adaptatif") return { mode: "adaptatif", start: 6, min: 2, max: 9, step: 0.25 };
@@ -254,7 +284,8 @@ export default function Lesson({ config, progress, audio, onFinish }) {
             playNote={playNote} soundOn={soundOn} />
         )}
         {exercise === "rythme" && (
-          <RhythmView lesson={lesson} audio={audio} soundOn={soundOn} />
+          <RhythmView lesson={lesson} audio={audio} soundOn={soundOn}
+            bpm={progress.settings.bpm} />
         )}
         {exercise === "intervalles" && (
           <IntervalView lesson={lesson} audio={audio} soundOn={soundOn} />
@@ -266,6 +297,13 @@ export default function Lesson({ config, progress, audio, onFinish }) {
         {exercise === "doigte" && (
           <FingerboardView lesson={lesson} audio={audio} soundOn={soundOn} />
         )}
+        {exercise === "mesures" && (
+          <MeterReadingView lesson={lesson} audio={audio} soundOn={soundOn}
+            bpm={progress.settings.bpm} />
+        )}
+        {exercise === "doubles" && (
+          <DoubleStopsView lesson={lesson} audio={audio} soundOn={soundOn} />
+        )}
         {exercise === "justesse" && (
           <IntonationView lesson={lesson} audio={audio} soundOn={soundOn} />
         )}
@@ -274,7 +312,8 @@ export default function Lesson({ config, progress, audio, onFinish }) {
           <MeasureView lesson={lesson} notation={notation} audio={audio} soundOn={soundOn} />
         )}
         {exercise === "dictee" && (
-          <RhythmTapView lesson={lesson} audio={audio} soundOn={soundOn} />
+          <RhythmTapView lesson={lesson} audio={audio} soundOn={soundOn}
+            bpm={progress.settings.bpm} />
         )}
         {exercise === "chanter" && (
           <SingIntervalView lesson={lesson} audio={audio} soundOn={soundOn} />

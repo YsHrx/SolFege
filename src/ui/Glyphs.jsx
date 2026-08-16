@@ -196,6 +196,7 @@ export function Staff({
   showClef = true,
   clef = "sol",
   keySignature = null,   // { count, type: "#" | "b" }
+  chord = false,         // toutes les notes sur le même temps
   className = "",
   ariaLabel,
 }) {
@@ -284,22 +285,214 @@ export function Staff({
         </g>
       ))}
 
-      {notes.map((n, i) => (
-        <StaffNote
-          key={i}
-          note={n}
-          x={noteZoneStart + step * i + step / 2}
-          y={yOf(n.position)}
-          k={k}
-          spacing={spacing}
-          width={width}
-        />
-      ))}
+      {/* Un accord n'est pas une suite : les têtes se superposent sur le
+          même temps, et une seule hampe les relie. Les étaler côte à côte
+          se lirait « deux notes l'une après l'autre ». */}
+      {chord && notes.length > 1 ? (
+        <ChordNotes notes={notes} x={noteZoneStart + step / 2}
+          yOf={yOf} k={k} spacing={spacing} />
+      ) : (
+        notes.map((n, i) => (
+          <StaffNote
+            key={i}
+            note={n}
+            x={noteZoneStart + step * i + step / 2}
+            y={yOf(n.position)}
+            k={k}
+            spacing={spacing}
+            width={width}
+          />
+        ))
+      )}
     </svg>
   );
 }
 
-function StaffNote({ note, x, y, k, spacing }) {
+/* ============================================================
+   PORTÉE RYTHMIQUE
+
+   Pour les motifs : le chiffrage de mesure, puis les figures posées sur
+   la ligne médiane et les silences à leur place d'usage. On ne montre
+   pas de hauteurs — il n'y en a pas à lire, et en poser une donnerait à
+   croire qu'elle compte.
+   ============================================================ */
+
+/** Où se pose chaque silence, en degrés depuis la ligne du bas. */
+const REST_POSITION = {
+  pause: 6,          // suspendu sous la 4e ligne
+  demi_pause: 4,     // posé sur la ligne médiane
+  soupir: 4,
+  soupir_pointe: 4,
+  demi_soupir: 4,
+  quart_soupir: 4,
+};
+
+const REST_NAME = {
+  pause: "restWhole",
+  demi_pause: "restHalf",
+  soupir: "restQuarter",
+  soupir_pointe: "restQuarter",
+  demi_soupir: "rest8th",
+  quart_soupir: "rest16th",
+};
+
+function TimeSignature({ top, bottom, x, y, k }) {
+  const digits = (n) => String(n).split("").map((d) => `timeSig${d}`);
+  const row = (names, cy) => {
+    const w = names.reduce((a, n) => a + GLYPH[n].box[2], 0);
+    let cx = -w / 2;
+    return names.map((n, i) => {
+      const el = <g key={i} transform={`translate(${cx} ${cy})`}><Path name={n} /></g>;
+      cx += GLYPH[n].box[2];
+      return el;
+    });
+  };
+  return (
+    <g transform={`translate(${x} ${y}) scale(${k})`} color="var(--ink)">
+      {/* le chiffre du haut se centre sur le 2e interligne, celui du bas
+          sur le 4e — c'est la convention de gravure */}
+      {row(digits(top), -10)}
+      {row(digits(bottom), 10)}
+    </g>
+  );
+}
+
+/**
+ * @param pattern [{ value, rest }] — les durées, dans l'ordre
+ * @param meter   { top, bottom } — le chiffrage affiché
+ * @param cursor  index de l'élément mis en avant, ou -1
+ */
+export function RhythmStaff({
+  pattern = [],
+  meter = { top: 4, bottom: 4 },
+  spacing = 15,
+  cursor = -1,
+  state = null,
+  className = "",
+  ariaLabel,
+}) {
+  const k = spacing / U;
+  const padTop = 2.2;
+  const padBottom = 2.6;
+  const topLineY = padTop * spacing;
+  const bottomLineY = topLineY + 4 * spacing;
+  const height = bottomLineY + padBottom * spacing;
+  const yOf = (p) => bottomLineY - (p * spacing) / 2;
+
+  const leftPad = spacing * 0.9;
+  const sigX = leftPad + spacing * 0.85;
+  const start = sigX + spacing * 2.1;
+
+  /* Placement mi-proportionnel, mi-régulier. Une répartition purement
+     proportionnelle à la durée est juste en théorie mais tasse les
+     croches les unes sur les autres ; une répartition régulière ment sur
+     les durées. Les graveurs font le compromis, on le fait aussi. */
+  const totalBeats = pattern.reduce((a, s) => a + s.value.beats, 0) || 1;
+  const n = pattern.length;
+  const zone = spacing * 2.3 * Math.max(4, n);
+  const width = start + zone + spacing * 1.4;
+  const MIX = 0.55; // part de la durée dans le placement
+
+  let cum = 0;
+  const placed = pattern.map((s, i) => {
+    const byTime = cum / totalBeats + s.value.beats / totalBeats / 2;
+    const byRank = (i + 0.5) / n;
+    const x = start + (byTime * MIX + byRank * (1 - MIX)) * zone;
+    cum += s.value.beats;
+    return { ...s, x };
+  });
+
+  const color =
+    state === "good" ? "var(--moss)" : state === "bad" ? "var(--brick)" : "var(--ink)";
+
+  return (
+    <svg viewBox={`0 0 ${Math.round(width)} ${Math.round(height)}`} className={className}
+      role="img" aria-label={ariaLabel || "Motif rythmique"}
+      style={{
+        display: "block", width: "100%", maxWidth: Math.round(width),
+        height: "auto", margin: "0 auto", overflow: "visible",
+      }}>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <rect key={i} x="0" y={topLineY + i * spacing - (ENGRAVING.staffLine * k) / 2}
+          width={width} height={ENGRAVING.staffLine * k} fill="var(--ink)" />
+      ))}
+
+      <TimeSignature top={meter.top} bottom={meter.bottom} x={sigX} y={yOf(4)} k={k} />
+
+      <g color={color} style={{ transition: "color 140ms" }}>
+        {placed.map((s, i) => {
+          const hot = i === cursor;
+          const op = cursor >= 0 && !hot ? 0.35 : 1;
+          if (s.rest) {
+            const restId = s.value.id === "noire_pointee" ? "soupir_pointe"
+              : { ronde: "pause", blanche: "demi_pause", noire: "soupir",
+                croche: "demi_soupir", double: "quart_soupir" }[s.value.id] || "soupir";
+            const g = GLYPH[REST_NAME[restId]];
+            return (
+              <g key={i} opacity={op}>
+                <g transform={`translate(${s.x - (g.box[2] * k) / 2} ${yOf(REST_POSITION[restId])}) scale(${k})`}>
+                  <Path name={REST_NAME[restId]} />
+                  {restId === "soupir_pointe" && (
+                    <Path name="augmentationDot" x={g.box[2] + 3} y={-U / 2} />
+                  )}
+                </g>
+              </g>
+            );
+          }
+          return (
+            <g key={i} opacity={op}>
+              <StaffNote
+                note={{ position: 4, value: s.value.id }}
+                x={s.x} y={yOf(4)} k={k} spacing={spacing}
+                forceStemDown
+              />
+            </g>
+          );
+        })}
+      </g>
+
+      {/* barre de mesure finale */}
+      <rect x={width - spacing * 0.5} y={topLineY}
+        width={ENGRAVING.barlineThick * k} height={4 * spacing} fill="var(--ink)" />
+    </svg>
+  );
+}
+
+/* Un accord : les têtes empilées, une hampe unique qui part de la note
+   extrême. La hampe monte si le centre de l'accord est sous la ligne
+   médiane, exactement comme pour une note seule. */
+function ChordNotes({ notes, x, yOf, k, spacing }) {
+  const sorted = [...notes].sort((a, b) => a.position - b.position);
+  const lowest = sorted[0];
+  const highest = sorted[sorted.length - 1];
+  const middle = (lowest.position + highest.position) / 2;
+  const up = middle <= 4;
+
+  const head = GLYPH.noteheadBlack;
+  const headW = head.box[2] * k;
+  const w = ENGRAVING.stem * k;
+  const len = STEM.length * k;
+  const stemX = x - headW / 2 + (up ? STEM.upX : STEM.downX) * k - w / 2;
+  const stemTop = up ? yOf(highest.position) - len : yOf(lowest.position);
+  const stemBottom = up ? yOf(lowest.position) : yOf(highest.position) + len;
+
+  const state = notes.find((n) => n.state)?.state;
+  const color =
+    state === "good" ? "var(--moss)" : state === "bad" ? "var(--brick)" : "var(--ink)";
+
+  return (
+    <g color={color} style={{ transition: "color 140ms" }}>
+      {sorted.map((n, i) => (
+        <StaffNote key={i} note={{ ...n, value: "noire", state: null }}
+          x={x} y={yOf(n.position)} k={k} spacing={spacing} hideStem />
+      ))}
+      <rect x={stemX} y={stemTop} width={w} height={stemBottom - stemTop}
+        fill="currentColor" />
+    </g>
+  );
+}
+
+function StaffNote({ note, x, y, k, spacing, forceStemDown, hideStem }) {
   const { position, value = "noire", state, accidental } = note;
   const f = FIGURE[value] || FIGURE.noire;
   const head = GLYPH[f.head];
@@ -309,8 +502,10 @@ function StaffNote({ note, x, y, k, spacing }) {
     state === "good" ? "var(--moss)" : state === "bad" ? "var(--brick)" : "var(--ink)";
 
   // La hampe monte sous la ligne médiane, descend au-dessus : c'est la
-  // règle de gravure, et elle garde la note dans le cadre.
-  const up = position <= 4;
+  // règle de gravure, et elle garde la note dans le cadre. Sur une portée
+  // rythmique tout est sur la ligne médiane, où la convention est de
+  // descendre la hampe.
+  const up = forceStemDown ? false : position <= 4;
   const len = stemLength(f.flags) * k;
   // Les ancrages SMuFL sont donnés depuis l'ORIGINE de la tête, c'est-à-dire
   // son bord gauche — pas son centre. La tête étant centrée sur x, il faut
@@ -353,11 +548,11 @@ function StaffNote({ note, x, y, k, spacing }) {
         {f.dot && <Path name="augmentationDot" x={head.box[2] + 3} y={position % 2 === 0 ? -U / 2 : 0} />}
       </g>
 
-      {f.stem && (
+      {f.stem && !hideStem && (
         <rect x={stemX} y={stemY} width={ENGRAVING.stem * k} height={len} fill="currentColor" />
       )}
 
-      {f.flags > 0 && (
+      {f.flags > 0 && !hideStem && (
         <g transform={`translate(${stemX} ${up ? stemY : stemY + len}) scale(${k})`}>
           <Path name={
             f.flags === 1

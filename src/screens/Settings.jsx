@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Btn, Card, Segmented } from "../ui/kit.jsx";
-import { GOALS, dayKey } from "../state/progress.js";
+import { GOALS, dayKey, importProgress } from "../state/progress.js";
+import { TEMPO } from "../music/rhythm.js";
 import Curve from "../ui/Curve.jsx";
 
 /* ============================================================
@@ -84,10 +85,30 @@ function Calendar({ log }) {
   );
 }
 
-export default function Settings({ progress, onChange, onReset, onBack }) {
+export default function Settings({ progress, onChange, onReset, onImport, onBack }) {
   const s = progress.settings;
   const [confirming, setConfirming] = useState(false);
+  const [importError, setImportError] = useState(null);
   const set = (patch) => onChange({ ...s, ...patch });
+
+  const pickFile = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "application/json,.json";
+    input.onchange = () => {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const next = importProgress(String(reader.result));
+        if (next) { setImportError(null); onImport(next); }
+        else setImportError("Ce fichier n'est pas une progression SolFège.");
+      };
+      reader.onerror = () => setImportError("Le fichier n'a pas pu être lu.");
+      reader.readAsText(file);
+    };
+    input.click();
+  };
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
@@ -134,6 +155,19 @@ export default function Settings({ progress, onChange, onReset, onBack }) {
         <Segmented value={s.goal} onChange={(v) => set({ goal: v })} ariaLabel="Objectif du jour"
           options={GOALS.map((g) => ({ value: g, label: String(g) }))} />
       </Row>
+      <Card className="p-4 flex flex-col gap-2">
+        <div className="flex items-baseline justify-between">
+          <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>Tempo</span>
+          <span className="mono" style={{ fontSize: "0.9rem" }}>{s.bpm} à la noire</span>
+        </div>
+        <div className="text-xs" style={{ color: "var(--ink-3)" }}>
+          La pulsation des exercices rythmiques. Plus lent pour déchiffrer,
+          plus rapide pour se mettre en difficulté.
+        </div>
+        <input type="range" min={TEMPO.min} max={TEMPO.max} step="1" value={s.bpm}
+          onChange={(e) => set({ bpm: Number(e.target.value) })}
+          aria-label="Tempo, en battements par minute" />
+      </Card>
 
       <span className="label mt-2">Pratique</span>
       <Card className="p-4 flex flex-col gap-2">
@@ -152,8 +186,12 @@ export default function Settings({ progress, onChange, onReset, onBack }) {
       </Card>
       <div className="flex gap-2">
         <Btn block onClick={exportJson}>Exporter</Btn>
-        <Btn block tone="brick" onClick={() => setConfirming(true)}>Réinitialiser</Btn>
+        <Btn block onClick={pickFile}>Importer</Btn>
       </div>
+      {importError && (
+        <p className="text-sm" style={{ color: "var(--brick)" }}>{importError}</p>
+      )}
+      <Btn block tone="brick" onClick={() => setConfirming(true)}>Réinitialiser</Btn>
 
       {confirming && (
         <Card className="p-4 flex flex-col gap-3 anim-rise">

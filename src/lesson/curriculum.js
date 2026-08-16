@@ -195,6 +195,18 @@ export const UNITS = [
     ],
   },
   {
+    id: "u95",
+    title: "Mesures et silences",
+    hint: "La mesure entière, des silences, le 6/8",
+    tone: "var(--blue)",
+    lessons: [
+      { id: "u95l1", title: "Reconnaître une mesure", exercise: "mesures", difficulty: "debutant", total: 8 },
+      { id: "u95l2", title: "Avec des silences", exercise: "mesures", difficulty: "intermediaire", total: 10 },
+      { id: "u95l3", title: "Mesures composées", exercise: "mesures", difficulty: "avance", total: 10 },
+      { id: "u95l4", title: "Point d'étape", exercise: "mesures", difficulty: "avance", total: 12, checkpoint: true },
+    ],
+  },
+  {
     id: "u10",
     title: "Produire l'intervalle",
     hint: "Le chanter ou le jouer, micro allumé",
@@ -214,6 +226,27 @@ export const UNITS = [
       { id: "u8l2", title: "Les octaves hautes", exercise: "notes", pool: upTo("Do6", "Do7"), total: 10 },
       { id: "u8l3", title: "Toute la tessiture", exercise: "notes", pool: upTo("Sol3", "Do7"), total: 16, timerMode: "adaptatif" },
       { id: "u8l4", title: "Point d'étape", exercise: "notes", pool: upTo("Sol3", "Do7"), total: 18, timerMode: "adaptatif", checkpoint: true },
+    ],
+  },
+  {
+    id: "u11",
+    title: "Changer de position",
+    hint: "La main quitte la première position",
+    tone: "var(--brick)",
+    lessons: [
+      { id: "u11l1", title: "2e position", exercise: "doigte", position: 2, total: 10 },
+      { id: "u11l2", title: "3e position", exercise: "doigte", position: 3, total: 10 },
+      { id: "u11l3", title: "Point d'étape", exercise: "doigte", position: 3, total: 12, checkpoint: true },
+    ],
+  },
+  {
+    id: "u12",
+    title: "Doubles cordes",
+    hint: "Deux notes ensemble, et la justesse qui compte double",
+    tone: "var(--moss)",
+    lessons: [
+      { id: "u12l1", title: "Premières doubles cordes", exercise: "doubles", position: 1, total: 6 },
+      { id: "u12l2", title: "Point d'étape", exercise: "doubles", position: 1, total: 8, checkpoint: true },
     ],
   },
 ];
