@@ -89,7 +89,9 @@ export function SingIntervalView({ lesson, audio, soundOn, a4, tolerance }) {
     settled.current = false;
     startedAt.current = Date.now();
     setHeld(0);
-    if (soundOn) setTimeout(playRoot, 260);
+    if (!soundOn) return undefined;
+    const t = setTimeout(playRoot, 260);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp, soundOn]);
 
@@ -104,6 +106,14 @@ export function SingIntervalView({ lesson, audio, soundOn, a4, tolerance }) {
     setHeld(Math.min(1, holdRef.current / HOLD_MS));
     if (holdRef.current >= HOLD_MS) { settled.current = true; submit("juste"); }
   }, [cents, inTune, isAsking, state, submit]);
+
+  /* Le compte à rebours d'abandon part de l'activation du micro, pas de
+     l'affichage de l'écran. Sinon, quelqu'un qui prend le temps de lire
+     la consigne, d'autoriser le micro et de sortir son violon voit sa
+     première note comptée ratée à la seconde même où le micro s'ouvre. */
+  useEffect(() => {
+    if (state === "on") startedAt.current = Date.now();
+  }, [state]);
 
   useEffect(() => {
     if (!isAsking || state !== "on") return undefined;

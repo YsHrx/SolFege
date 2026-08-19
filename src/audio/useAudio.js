@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { A4_DEFAULT, midiToFreq } from "../music/notes.js";
+import { A4_DEFAULT, A4_RANGE, midiToFreq } from "../music/notes.js";
 
 /* ============================================================
    SON
@@ -73,7 +73,7 @@ export function useAudio() {
      décale la vitesse de lecture d'autant. */
   const a4Ref = useRef(A4_DEFAULT);
   const setTuning = useCallback((hz) => {
-    a4Ref.current = Math.min(466, Math.max(400, hz || A4_DEFAULT));
+    a4Ref.current = Math.min(A4_RANGE.max, Math.max(A4_RANGE.min, hz || A4_DEFAULT));
   }, []);
   const buffersRef = useRef(new Map());
   const inFlightRef = useRef(new Map());

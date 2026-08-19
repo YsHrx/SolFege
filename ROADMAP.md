@@ -141,3 +141,42 @@ Rien de ceci n'était dans la revue initiale.
 - [x] ~~Mesures composées (6/8, 9/8) et changements de tempo~~
 - [x] ~~Import d'une progression exportée~~
 - [x] ~~Choix du tempo de référence dans les réglages~~
+- [x] ~~Diapason réglable (415–446 Hz), suivi par le jeu comme par le micro~~
+- [x] ~~Exigence de justesse réglable, la zone verte faisant foi~~
+
+## Relecture croisée (cinq revues indépendantes)
+
+Une relecture complète du code, découpée en cinq lots — audio et micro,
+moteur et état, exercices sans micro, notation et interface, cohérence
+pédagogique. Ce qui suit est ce qu'elle a trouvé et ce qui a été corrigé.
+
+### Corrections
+
+- [x] ~~Micro laissé ouvert si l'exercice est quitté pendant la demande d'autorisation~~
+- [x] ~~Délai d'abandon des exercices au micro compté depuis l'affichage, pas depuis l'ouverture du micro~~
+- [x] ~~Note de référence programmée puis jamais annulée au changement de question~~
+- [x] ~~Une sauvegarde importée corrompue faisait planter l'accueil et survivait au rechargement~~
+- [x] ~~Un compteur non numérique en mémoire faisait poser la même question toute la leçon~~
+- [x] ~~La réserve de gels de série se remplissait à l'infini : la série ne pouvait plus se rompre~~
+- [x] ~~`onFinish` non figé : le contre-la-montre pouvait relancer son compte à rebours~~
+- [x] ~~En 6/8 et 9/8, la majorité des motifs faisaient chevaucher une note sur la pulsation~~
+- [x] ~~Repli du générateur de motifs faux en mesure composée (4,5 temps arrondis à 5)~~
+- [x] ~~« Lire une mesure » n'alimentait jamais la mémoire par note qu'il consulte~~
+- [x] ~~Lecture et écriture d'une note partageaient la même mémoire, chacune masquant l'autre~~
+- [x] ~~Les altérations d'une armure se chevauchaient dès la deuxième~~
+- [x] ~~La hampe d'un accord sortait de la carte sur les sixtes et les septièmes~~
+- [x] ~~Hauteur de hampe d'accord négative au-delà de la septième~~
+- [x] ~~Flash de thème clair à chaque ouverture en ardoise~~
+- [x] ~~Aucune reprise après mise à jour : l'onglet ouvert gardait l'ancienne version~~
+- [x] ~~Aucun bémol avant le niveau avancé, alors que Fa majeur s'enseigne très tôt~~
+- [x] ~~Tolérance de frappe rythmique inatteignable au tempo maximal~~
+- [x] ~~Boucle d'écoute de la dictée non arrêtée au changement de question~~
+- [x] ~~Curseur du bouton bascule qui saute au lieu de glisser~~
+- [x] ~~`color-scheme` absent : curseurs natifs à contre-thème~~
+- [x] ~~Calendrier illisible au clavier et au lecteur d'écran~~
+
+### Écarté
+
+- Trois propositions seulement au premier niveau de lecture rythmique : il
+  n'existe que trois valeurs à ce stade, et en ajouter une reviendrait à
+  avancer la croche d'un palier pour une raison qui n'est pas pédagogique.

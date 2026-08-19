@@ -5,6 +5,7 @@ import { Staff } from "../ui/Glyphs.jsx";
 import { EXERCISES } from "./Lesson.jsx";
 import { FORMATS } from "../lesson/engine.js";
 import { noteByLabel, staffPosition } from "../music/notes.js";
+import { NOTE_PREFIXES } from "../state/progress.js";
 
 /* ============================================================
    FIN DE LEÇON
@@ -38,10 +39,15 @@ function verdict(pct, abandoned, format, score, failed) {
 /** Les notes manquées, sur une mini-portée. L'information la plus utile
     de l'écran : un pourcentage ne dit pas SUR QUOI on a buté. */
 function Misses({ misses }) {
-  const notes = misses
-    .filter((k) => k.startsWith("note:"))
-    .map((k) => noteByLabel(k.slice(5)))
-    .filter(Boolean);
+  /* Les clés portent leur famille en préfixe — lecture, écriture,
+     oreille. Toutes désignent la même note sur la portée : on retire le
+     préfixe, on écarte les doublons, et l'altération éventuelle (« Fa5# »)
+     retombe sur la note naturelle plutôt que de disparaître. */
+  const notes = [...new Set(
+    misses
+      .filter((k) => NOTE_PREFIXES.some((pre) => k.startsWith(pre)))
+      .map((k) => k.slice(k.indexOf(":") + 1).replace(/[#b]$/, ""))
+  )].map(noteByLabel).filter(Boolean);
   if (!notes.length) return null;
   return (
     <Card sunk className="w-full p-3 flex flex-col gap-2">

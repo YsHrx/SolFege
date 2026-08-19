@@ -92,10 +92,23 @@ export function buildPattern(meter, pool, { rests = true } = {}) {
     let left = total;
     while (left > 0.001) {
       let fits = usable.filter((v) => v.beats <= left + 0.001);
-      // en mesure composée, la noire pointée tombe juste sur la pulsation
-      if (meter.compound && Math.abs(left % meter.pulseBeats) < 0.001) {
-        const onPulse = fits.filter((v) => v.beats === meter.pulseBeats || v.beats <= 0.5);
-        if (onPulse.length) fits = onPulse;
+      /* En mesure composée, une figure ne franchit pas la pulsation : une
+         blanche à cheval sur deux noires pointées ne s'écrit pas comme ça
+         et ne s'entend pas comme un 6/8. On regarde donc ce qu'il reste
+         jusqu'à la PROCHAINE pulsation, pas jusqu'au bout de la mesure.
+         Seule exception, depuis une pulsation : une valeur qui couvre un
+         nombre entier de pulsations reste licite. */
+      if (meter.compound) {
+        const rem = (total - left) % meter.pulseBeats;
+        const onPulse = rem < 0.001 || meter.pulseBeats - rem < 0.001;
+        const toPulse = onPulse ? meter.pulseBeats : meter.pulseBeats - rem;
+        const inPulse = fits.filter((v) => {
+          if (v.beats <= toPulse + 0.001) return true;
+          if (!onPulse) return false;
+          const pulses = v.beats / meter.pulseBeats;
+          return Math.abs(pulses - Math.round(pulses)) < 0.001;
+        });
+        if (inPulse.length) fits = inPulse;
       }
       if (!fits.length) break;
       const value = fits[Math.floor(Math.random() * fits.length)];
@@ -111,8 +124,13 @@ export function buildPattern(meter, pool, { rests = true } = {}) {
       if (seq.filter((s) => !s.rest).length >= 2) return seq;
     }
   }
-  const noire = RHYTHM_VALUES.find((v) => v.id === "noire");
-  return Array.from({ length: Math.round(total) }, () => ({ value: noire, rest: false }));
+  /* Ultime recours : on remplit la mesure de pulsations. La noire pointée
+     pour une mesure composée — une mesure à 9/8 dure 4,5 temps, que des
+     noires ne rempliraient jamais exactement. */
+  const fill = RHYTHM_VALUES.find(
+    (v) => v.id === (meter.compound ? "noire_pointee" : "noire")
+  );
+  return Array.from({ length: meter.pulses }, () => ({ value: fill, rest: false }));
 }
 
 export const patternKey = (seq) =>

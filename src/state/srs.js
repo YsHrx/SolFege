@@ -34,7 +34,11 @@ export function weightOf(item) {
   const age = (Date.now() - (item.last || 0)) / DAY;
   if (age > 2) w += Math.min(1.2, (age - 2) * 0.25);
 
-  return Math.max(0.12, w);
+  /* Un seul poids NaN — un compteur non numérique dans une sauvegarde
+     retouchée — suffirait à rendre NaN la somme des poids, et le tirage
+     renverrait alors toujours le dernier candidat du sac : la leçon
+     entière poserait la même question. */
+  return Number.isFinite(w) ? Math.max(0.12, w) : 1;
 }
 
 /**

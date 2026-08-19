@@ -17,10 +17,23 @@ import { distractors, makePicker } from "../state/srs.js";
 
 export const keySigKeyOf = (k) => `armure:${k.count}${k.type}`;
 
+/* Ordre d'apprentissage, qui n'est pas l'ordre de rangement du cycle des
+   quintes : on alterne dièses et bémols en montant le nombre
+   d'altérations. Trancher la table dans son ordre naturel réservait tous
+   les bémols au niveau avancé — Fa majeur, une armure d'un seul bémol
+   qu'on enseigne juste après Sol majeur, n'apparaissait qu'après Mi et
+   Si majeur. */
+const LEARNING_ORDER = [
+  "0#", "1#", "1b", "2#", "2b", "3#", "3b", "4#", "4b", "5#", "5b",
+];
+const ORDERED = LEARNING_ORDER
+  .map((id) => KEY_SIGNATURES.find((k) => `${k.count}${k.type}` === id))
+  .filter(Boolean);
+
 export function makeKeySigDraw(difficulty, items) {
-  // on ouvre progressivement le cycle des quintes
-  const limit = difficulty === "debutant" ? 3 : difficulty === "intermediaire" ? 6 : 11;
-  const pool = KEY_SIGNATURES.slice(0, limit);
+  // on ouvre progressivement le cycle des quintes, des deux côtés
+  const limit = difficulty === "debutant" ? 4 : difficulty === "intermediaire" ? 7 : 11;
+  const pool = ORDERED.slice(0, limit);
   const pick = makePicker(pool, keySigKeyOf, items);
   return (prev) => {
     const key = pick(prev ? prev.sig : null);

@@ -25,6 +25,15 @@ const KEYS_EN = { c: "C", d: "D", e: "E", f: "F", g: "G", a: "A", b: "B" };
 
 export const measureKeyOf = (m) => `mesure:${m.map((n) => n.label).join("-")}`;
 
+/* La mesure se joue d'un bloc mais s'enregistre note à note : c'est le
+   Fa♯5 qui résiste, pas la combinaison des quatre. Le moteur reçoit donc
+   les quatre verdicts, sous les mêmes clés que la lecture de notes. */
+export const measureItemResults = (q, marks) =>
+  q.seq.map((n, i) => ({
+    key: noteKeyOf(n),
+    ok: Array.isArray(marks) && marks[i] === "good",
+  }));
+
 export function makeMeasureDraw(difficulty, items, pool) {
   const notes = pool || RANGES[difficulty].notes;
   const pick = makePicker(notes, noteKeyOf, items);
@@ -43,8 +52,10 @@ export function makeMeasureDraw(difficulty, items, pool) {
   };
 }
 
-/** Le moteur ne reçoit qu'un verdict : la vue gère les quatre réponses. */
-export const measureIsCorrect = (q, v) => v === true;
+/** La vue remonte les quatre marques ; la mesure n'est juste que si
+    toutes le sont. */
+export const measureIsCorrect = (q, v) =>
+  Array.isArray(v) && v.length === q.seq.length && v.every((m) => m === "good");
 
 export function MeasureView({ lesson, notation, audio, soundOn }) {
   const { question, phase, wasCorrect, submit, isAsking } = lesson;
@@ -82,7 +93,7 @@ export function MeasureView({ lesson, notation, audio, soundOn }) {
     if (next.length >= LENGTH) {
       settled.current = true;
       // court délai : on laisse voir la dernière note se colorer
-      setTimeout(() => submit(next.every((m) => m === "good")), 380);
+      setTimeout(() => submit(next), 380);
     } else {
       setStep(next.length);
     }

@@ -90,8 +90,8 @@ export function useLesson(opts) {
 
   // L'exercice redéfinit ces fonctions à chaque rendu ; on les lit par ref
   // pour que les minuteurs n'aient pas à être reconstruits pour autant.
-  const fns = useRef({ draw, isCorrect: opts.isCorrect });
-  fns.current = { draw, isCorrect: opts.isCorrect };
+  const fns = useRef({ draw, isCorrect: opts.isCorrect, itemResults: opts.itemResults });
+  fns.current = { draw, isCorrect: opts.isCorrect, itemResults: opts.itemResults };
 
   const clearTimers = () => {
     clearInterval(tickRef.current);
@@ -99,13 +99,20 @@ export function useLesson(opts) {
     clearInterval(globalRef.current);
   };
 
+  /* `onFinish` est lu par ref. S'il changeait d'identité en cours de
+     partie, `finish` changerait avec lui — et l'effet du contre-la-montre,
+     qui en dépend, redémarrerait son compte à rebours depuis le début : le
+     temps imparti ne s'écoulerait jamais. */
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
+
   const finish = useCallback((abandoned = false, failed = false) => {
     if (S.current.done) return;
     S.current.done = true;
     clearTimers();
     const s = S.current;
     const asked = s.correct + s.wrong;
-    onFinish({
+    finishRef.current({
       correct: s.correct,
       total: asked,
       bestCombo: s.bestCombo,
@@ -121,7 +128,7 @@ export function useLesson(opts) {
           : format === "mort_subite" ? s.correct
             : asked ? Math.round((s.correct / asked) * 100) : 0,
     });
-  }, [format, onFinish]);
+  }, [format]);
 
   /* ---------- chronomètre global (contre-la-montre) ---------- */
   useEffect(() => {
@@ -228,7 +235,14 @@ export function useLesson(opts) {
         setHearts(s.hearts);
       }
     }
-    s.results.push({ key: q.key, ok });
+    /* Une question peut porter sur plusieurs items — une mesure, c'est
+       quatre notes. Sans ce détour, la mémoire n'enregistrerait qu'une
+       clé composite qui ne se représente jamais, et la répétition
+       espacée resterait lettre morte pour tout ce qui se pratique par
+       groupes. */
+    const detail = fns.current.itemResults && fns.current.itemResults(q, value);
+    if (detail && detail.length) s.results.push(...detail);
+    else s.results.push({ key: q.key, ok });
 
     // chronomètre adaptatif
     if (timer.mode === "adaptatif" || format === "mort_subite") {

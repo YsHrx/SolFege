@@ -20,6 +20,25 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="SolFège" />
+
+    <!-- Le thème est posé AVANT le premier rendu. React ne pourrait le
+         faire qu'après, et l'application s'ouvrirait une fraction de
+         seconde en papier blanc avant de basculer en ardoise — ce qui,
+         pour une application qu'on rouvre le soir, est le pire moment
+         possible pour prendre un flash de blanc. -->
+    <script>
+      (function () {
+        try {
+          var saved = JSON.parse(localStorage.getItem("solfege_v5") || "{}");
+          var choice = (saved.settings && saved.settings.theme) || "systeme";
+          var dark = choice === "ardoise" || (choice === "systeme"
+            && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "ardoise" : "papier";
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", dark ? "#1a211d" : "#fbf7ea");
+        } catch (e) { /* sauvegarde illisible : le thème clair fera l'affaire */ }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

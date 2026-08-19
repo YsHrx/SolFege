@@ -213,12 +213,26 @@ export function Staff({
 
   // Débordement dû aux notes : hampes, crochets et lignes supplémentaires.
   let noteAbove = 4, noteBelow = 0; // au minimum, la hauteur de la portée
-  for (const n of notes) {
-    const p = n.position;
-    const up = p <= 4;
-    const headAbove = p / 2;
-    noteAbove = Math.max(noteAbove, headAbove + (up ? stemLength(0) / U + 1 : 1));
-    noteBelow = Math.max(noteBelow, -headAbove + (up ? 1 : stemLength(0) / U + 1));
+  const stemUnits = stemLength(0) / U;
+  if (chord && notes.length) {
+    /* Un accord ne porte qu'une hampe, et son sens dépend de la MOYENNE
+       des deux têtes — pas de chaque tête prise à part. Calculer la marge
+       note par note faisait sortir la hampe hors du cadre sur les sixtes
+       et les septièmes, où elle traversait la carte. */
+    const ps = notes.map((n) => n.position);
+    const lo = Math.min(...ps) / 2;
+    const hi = Math.max(...ps) / 2;
+    const up = (Math.min(...ps) + Math.max(...ps)) / 2 <= 4;
+    noteAbove = Math.max(noteAbove, hi + (up ? stemUnits : 1));
+    noteBelow = Math.max(noteBelow, -lo + (up ? 1 : stemUnits));
+  } else {
+    for (const n of notes) {
+      const p = n.position;
+      const up = p <= 4;
+      const headAbove = p / 2;
+      noteAbove = Math.max(noteAbove, headAbove + (up ? stemUnits + 1 : 1));
+      noteBelow = Math.max(noteBelow, -headAbove + (up ? 1 : stemUnits + 1));
+    }
   }
 
   const padTop = Math.max(clefAbove - 4, noteAbove - 4, 1) + 0.6;
@@ -239,7 +253,11 @@ export function Staff({
     : [];
   const sigGlyph = keySignature && keySignature.type === "b"
     ? "accidentalFlat" : "accidentalSharp";
-  const sigStep = spacing * (keySignature && keySignature.type === "b" ? 0.62 : 0.66);
+  /* L'écart entre deux altérations se déduit de la largeur RÉELLE du
+     signe, pas d'une fraction d'interligne choisie à l'œil : un dièse
+     Bravura fait presque un interligne de large, et à 0,66 les cinq
+     dièses de Si majeur se chevauchaient les uns les autres. */
+  const sigStep = (GLYPH[sigGlyph].box[2] / U + 0.14) * spacing;
   const sigStart = leftPad + clefW + spacing * 0.5;
   const sigW = sigPositions.length ? sigPositions.length * sigStep + spacing * 0.4 : 0;
 
@@ -473,8 +491,12 @@ function ChordNotes({ notes, x, yOf, k, spacing }) {
   const w = ENGRAVING.stem * k;
   const len = STEM.length * k;
   const stemX = x - headW / 2 + (up ? STEM.upX : STEM.downX) * k - w / 2;
-  const stemTop = up ? yOf(highest.position) - len : yOf(lowest.position);
-  const stemBottom = up ? yOf(lowest.position) : yOf(highest.position) + len;
+  /* La hampe part de la tête opposée à son sens et dépasse l'autre d'une
+     longueur pleine : elle grandit donc avec l'écart de l'accord, au lieu
+     d'être rognée par lui (une neuvième donnait une hauteur négative, et
+     le trait disparaissait). */
+  const stemTop = up ? yOf(highest.position) - len : yOf(highest.position);
+  const stemBottom = up ? yOf(lowest.position) : yOf(lowest.position) + len;
 
   const state = notes.find((n) => n.state)?.state;
   const color =

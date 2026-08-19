@@ -5,7 +5,6 @@ import { Mascot } from "../ui/Mascot.jsx";
 import { RANGES, midiToFreq, staffPosition } from "../music/notes.js";
 import { centsBetween, usePitchTracker } from "../audio/usePitch.js";
 import { makePicker } from "../state/srs.js";
-import { noteKeyOf } from "./NoteReading.jsx";
 
 /* ============================================================
    LA JUSTESSE
@@ -15,9 +14,11 @@ import { noteKeyOf } from "./NoteReading.jsx";
    Duolingo, et c'est la fonctionnalité qui distingue réellement cet
    outil : partout ailleurs on répond à un quiz, ici on joue.
 
-   Validation : il faut tenir la note dans une fenêtre de ±20 cents
-   pendant six dixièmes de seconde. Un passage fugace ne compte pas —
-   c'est la tenue qui prouve qu'on entend sa propre justesse.
+   Validation : il faut tenir la note dans la zone verte pendant six
+   dixièmes de seconde. Un passage fugace ne compte pas — c'est la tenue
+   qui prouve qu'on entend sa propre justesse. La largeur de la zone est
+   un réglage (15, 25 ou 35 cents) : le bon seuil dépend surtout du
+   micro et de la pièce.
 
    Rien de ce qui est capté ne sort du navigateur, et le flux est coupé
    dès qu'on quitte l'exercice.
@@ -153,6 +154,14 @@ export function IntonationView({ lesson, audio, soundOn, a4, tolerance }) {
       submit("juste");
     }
   }, [cents, inTune, isAsking, state, submit]);
+
+  /* Le compte à rebours d'abandon part de l'activation du micro, pas de
+     l'affichage de l'écran. Sinon, quelqu'un qui prend le temps de lire
+     la consigne, d'autoriser le micro et de sortir son violon voit sa
+     première note comptée ratée à la seconde même où le micro s'ouvre. */
+  useEffect(() => {
+    if (state === "on") startedAt.current = Date.now();
+  }, [state]);
 
   // filet de sécurité : on n'attend pas indéfiniment
   useEffect(() => {

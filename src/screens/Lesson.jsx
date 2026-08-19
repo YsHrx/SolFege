@@ -20,7 +20,9 @@ import {
 import {
   KeySignatureView, makeKeySigDraw, keySigIsCorrect,
 } from "../exercises/KeySignatures.jsx";
-import { MeasureView, makeMeasureDraw, measureIsCorrect } from "../exercises/Measure.jsx";
+import {
+  MeasureView, makeMeasureDraw, measureIsCorrect, measureItemResults,
+} from "../exercises/Measure.jsx";
 import { RhythmTapView, makeTapDraw, tapIsCorrect } from "../exercises/RhythmTap.jsx";
 import {
   SingIntervalView, makeSingDraw, singIsCorrect,
@@ -196,6 +198,13 @@ export default function Lesson({ config, progress, audio, onFinish }) {
     return noteIsCorrect(q, v, notation);
   }, [exercise, notation]);
 
+  /* Les questions qui portent sur plusieurs items renvoient un verdict
+     par item, pour que la répétition espacée sache sur QUOI l'on a buté. */
+  const itemResults = useCallback((q, v) => {
+    if (exercise === "mesure") return measureItemResults(q, v);
+    return null;
+  }, [exercise]);
+
   const timer = useMemo(() => {
     // on ne met pas un violoniste au chronomètre pendant qu'il cherche sa
     // justesse : l'exercice a son propre garde-fou
@@ -221,6 +230,7 @@ export default function Lesson({ config, progress, audio, onFinish }) {
     timer,
     draw,
     isCorrect,
+    itemResults,
     onFinish,
   });
 

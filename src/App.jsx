@@ -2,8 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useAudio } from "./audio/useAudio.js";
 import {
   applyLesson, dayKey, lessonsToday, loadProgress, recordKey,
-  resetProgress, saveProgress, streakAlive, weakItems, xpFor, xpForLevel,
+  NOTE_PREFIXES, resetProgress, saveProgress, streakAlive, weakItems, xpFor,
+  xpForLevel,
 } from "./state/progress.js";
+import { applyUpdateIfIdle } from "./state/update.js";
 import { ALL_LESSONS, nextLesson, unitLegendary } from "./lesson/curriculum.js";
 import { Btn, Card, Segmented, StaffLines } from "./ui/kit.jsx";
 import { Mascot } from "./ui/Mascot.jsx";
@@ -171,6 +173,12 @@ export default function App() {
   const [progress, setProgress] = useState(loadProgress);
   const [mode, setMode] = useState("progression");
   const [screen, setScreen] = useState("home");
+
+  /* Une nouvelle version en attente se prend sur l'accueil, où le
+     rechargement ne coûte rien — pas au milieu d'une leçon. */
+  useEffect(() => {
+    if (screen === "home") applyUpdateIfIdle();
+  }, [screen]);
   const [setupExercise, setSetupExercise] = useState(null);
   const [config, setConfig] = useState(null);
   const [result, setResult] = useState(null);
@@ -231,8 +239,8 @@ export default function App() {
   }, [startLesson]);
 
   const practiseWeak = useCallback(() => {
-    const weak = weakItems(progress, "note:", 8)
-      .map((w) => noteByLabel(w.key.slice(5)))
+    const weak = weakItems(progress, NOTE_PREFIXES, 8)
+      .map((w) => noteByLabel(w.label))
       .filter(Boolean);
     if (weak.length < 2) return;
     startLesson({

@@ -145,8 +145,15 @@ export function usePitchTracker() {
   const rafRef = useRef(0);
   const bufRef = useRef(new Float32Array(SIZE));
   const smoothRef = useRef([]);
+  /* La demande d'autorisation est asynchrone et peut durer longtemps —
+     la fenêtre du navigateur attend une réponse humaine. Si l'exercice
+     est quitté entre-temps, le nettoyage passe alors qu'il n'y a encore
+     rien à nettoyer, et le flux ouvert ensuite ne serait plus jamais
+     fermé : micro allumé indéfiniment, sans aucun moyen de l'arrêter. */
+  const abandoned = useRef(false);
 
   const stop = useCallback(() => {
+    abandoned.current = true;
     cancelAnimationFrame(rafRef.current);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -163,6 +170,7 @@ export function usePitchTracker() {
 
   const start = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setState("unsupported"); return; }
+    abandoned.current = false;
     setState("asking");
     let stream;
     try {
@@ -175,6 +183,11 @@ export function usePitchTracker() {
       });
     } catch {
       setState("denied");
+      return;
+    }
+    if (abandoned.current) {
+      // autorisation accordée après le départ : on referme aussitôt
+      stream.getTracks().forEach((t) => t.stop());
       return;
     }
     streamRef.current = stream;
@@ -230,10 +243,12 @@ export function useDoubleTracker(targets) {
   const ctxRef = useRef(null);
   const streamRef = useRef(null);
   const rafRef = useRef(0);
+  const abandoned = useRef(false);
   const targetsRef = useRef(targets);
   targetsRef.current = targets;
 
   const stop = useCallback(() => {
+    abandoned.current = true;
     cancelAnimationFrame(rafRef.current);
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
@@ -246,6 +261,7 @@ export function useDoubleTracker(targets) {
 
   const start = useCallback(async () => {
     if (!navigator.mediaDevices?.getUserMedia) { setState("unsupported"); return; }
+    abandoned.current = false;
     setState("asking");
     let stream;
     try {
@@ -253,6 +269,10 @@ export function useDoubleTracker(targets) {
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
       });
     } catch { setState("denied"); return; }
+    if (abandoned.current) {
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
     streamRef.current = stream;
 
     const AC = window.AudioContext || window.webkitAudioContext;

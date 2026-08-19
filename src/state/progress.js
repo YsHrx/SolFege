@@ -92,6 +92,75 @@ export const DEFAULT = {
 const num = (v, d) => (typeof v === "number" && Number.isFinite(v) ? v : d);
 const clean = (v, d) => Math.max(0, num(v, d));
 
+/* Les quatre tables libres de la sauvegarde. Ce sont les seules dont la
+   forme n'est pas fixée par le code : elles grandissent avec l'usage, et
+   un export retouché à la main — ou tronqué par un quota plein — peut y
+   glisser n'importe quoi. On ne se contente donc pas de vérifier que
+   c'est un objet ou un tableau : chaque entrée est relue.
+
+   Sans cela, une seule valeur `null` dans `sessions` suffit à faire
+   planter la courbe et l'écran d'entraînement, et comme l'état corrompu
+   est réenregistré aussitôt, le plantage survit au rechargement. */
+function cleanLog(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(k) && clean(v, 0) > 0) out[k] = clean(v, 0);
+  }
+  return out;
+}
+
+function cleanItems(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (!v || typeof v !== "object") continue;
+    out[k] = {
+      seen: clean(v.seen, 0),
+      wrong: clean(v.wrong, 0),
+      box: Math.min(5, clean(v.box, 0)),
+      last: clean(v.last, 0),
+    };
+  }
+  return out;
+}
+
+function cleanRecords(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (Number.isFinite(v)) out[k] = Math.max(0, v);
+  }
+  return out;
+}
+
+function cleanDone(raw) {
+  const out = {};
+  if (!raw || typeof raw !== "object") return out;
+  for (const [k, v] of Object.entries(raw)) {
+    if (v === "or" || v === "fait") out[k] = v;
+  }
+  return out;
+}
+
+function cleanSessions(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((s) => s && typeof s === "object")
+    .map((s) => ({
+      date: typeof s.date === "string" ? s.date : "",
+      exercise: typeof s.exercise === "string" ? s.exercise : "notes",
+      format: typeof s.format === "string" ? s.format : "serie",
+      difficulty: typeof s.difficulty === "string" ? s.difficulty : "debutant",
+      mode: typeof s.mode === "string" ? s.mode : "entrainement",
+      correct: clean(s.correct, 0),
+      total: clean(s.total, 0),
+      ms: clean(s.ms, 0),
+      abandoned: !!s.abandoned,
+    }))
+    .slice(-50);
+}
+
 /* La sauvegarde est relue à chaque ouverture. Si elle est partielle,
    tronquée ou issue d'une version antérieure, on la fusionne avec les
    valeurs par défaut plutôt que de lui faire confiance : un seul champ
@@ -111,12 +180,12 @@ function normalise(saved) {
       best: clean(d.best, 0),
       freezes: Math.min(MAX_FREEZES, clean(d.freezes, 0)),
       credit: clean(d.credit, 0),
-      log: d.log && typeof d.log === "object" ? d.log : {},
+      log: cleanLog(d.log),
     },
-    items: saved.items && typeof saved.items === "object" ? saved.items : {},
-    records: saved.records && typeof saved.records === "object" ? saved.records : {},
-    path: { done: (saved.path && saved.path.done) || {} },
-    sessions: Array.isArray(saved.sessions) ? saved.sessions.slice(-50) : [],
+    items: cleanItems(saved.items),
+    records: cleanRecords(saved.records),
+    path: { done: cleanDone(saved.path && saved.path.done) },
+    sessions: cleanSessions(saved.sessions),
     settings: {
       theme: ["systeme", "papier", "ardoise"].includes(s.theme) ? s.theme : "systeme",
       notation: s.notation === "en" ? "en" : "fr",
@@ -245,6 +314,11 @@ function bumpDays(days, today, gained) {
     next.credit -= LESSONS_PER_FREEZE;
     next.freezes += 1;
   }
+  /* Réserve pleine : le compteur repart de zéro. Sinon il continuerait de
+     grimper pendant des mois, et le gel dépensé serait remplacé dans la
+     seconde par le crédit accumulé — la série ne pourrait plus jamais se
+     rompre, ce qui lui retirerait tout enjeu. */
+  if (next.freezes >= MAX_FREEZES) next.credit = 0;
   return next;
 }
 
@@ -355,14 +429,31 @@ export function accuracyByExercise(p) {
   return out;
 }
 
-/** Les items les plus fragiles, pour la leçon « points faibles ». */
+/** Les items les plus fragiles, pour la leçon « points faibles ».
+
+    `prefix` accepte plusieurs familles : une note peut résister à la
+    lecture, à l'écriture ou à l'oreille, et ce sont trois mémoires
+    distinctes. On les regroupe par étiquette pour ne pas proposer trois
+    fois la même note à renforcer. */
 export function weakItems(p, prefix, limit = 8) {
-  return Object.entries(p.items)
-    .filter(([k, v]) => k.startsWith(prefix) && v.seen >= 2 && v.wrong > 0)
-    .map(([key, v]) => ({ key, ...v, rate: v.wrong / v.seen }))
+  const prefixes = Array.isArray(prefix) ? prefix : [prefix];
+  const merged = new Map();
+  for (const [key, v] of Object.entries(p.items)) {
+    const pre = prefixes.find((x) => key.startsWith(x));
+    if (!pre || v.seen < 2 || v.wrong < 1) continue;
+    const label = key.slice(pre.length);
+    const cur = merged.get(label);
+    if (!cur) merged.set(label, { key, label, seen: v.seen, wrong: v.wrong });
+    else { cur.seen += v.seen; cur.wrong += v.wrong; }
+  }
+  return [...merged.values()]
+    .map((v) => ({ ...v, rate: v.wrong / v.seen }))
     .sort((a, b) => b.rate - a.rate || b.wrong - a.wrong)
     .slice(0, limit);
 }
+
+/** Les familles de mémoire qui portent sur une note nommée. */
+export const NOTE_PREFIXES = ["note:", "ecrire:", "ecouter:"];
 
 export function recordKey(exercise, format, difficulty) {
   return `${exercise}|${format}|${difficulty}`;

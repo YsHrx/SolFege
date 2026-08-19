@@ -6,7 +6,7 @@ import {
   UNITS, lessonStates, nextLesson, unitLegendary, unitProgress,
 } from "../lesson/curriculum.js";
 import { EXERCISES } from "./Lesson.jsx";
-import { weakItems } from "../state/progress.js";
+import { NOTE_PREFIXES, weakItems } from "../state/progress.js";
 
 /* ============================================================
    LE CHEMIN
@@ -131,7 +131,7 @@ export default function Path({ progress, onStart, onPractiseWeak, onLegendary })
     nextRef.current.scrollIntoView({ block: "center", behavior: "auto" });
   }, []);
 
-  const weak = weakItems(progress, "note:", 8);
+  const weak = weakItems(progress, NOTE_PREFIXES, 8);
   const allDone = states.every((l) => l.state === "or" || l.state === "fait");
 
   let index = 0;

@@ -5,7 +5,6 @@ import {
   ALL_NOTES, RANGES, noteName, staffPosition,
 } from "../music/notes.js";
 import { makePicker } from "../state/srs.js";
-import { noteKeyOf } from "./NoteReading.jsx";
 
 /* ============================================================
    POSER UNE NOTE SUR LA PORTÉE
@@ -25,12 +24,19 @@ import { noteKeyOf } from "./NoteReading.jsx";
 
 const U = 10;
 
+/* Poser une note et la lire ne sont pas la même compétence : on peut
+   nommer un Fa5 sans hésiter et le placer une ligne trop haut. Chaque
+   sens a donc sa propre mémoire — les partager laisserait la lecture,
+   plus fréquente, masquer les faiblesses de l'écriture. */
+export const placingKeyOf = (mode, n) => `${mode}:${n.label}`;
+
 export function makePlacingDraw(difficulty, items, pool, mode) {
   const notes = pool || RANGES[difficulty].notes;
-  const pick = makePicker(notes, noteKeyOf, items);
+  const keyOf = (n) => placingKeyOf(mode, n);
+  const pick = makePicker(notes, keyOf, items);
   return (prev) => {
     const note = pick(prev ? prev.note : null);
-    return { key: noteKeyOf(note), note, mode };
+    return { key: keyOf(note), note, mode };
   };
 }
 

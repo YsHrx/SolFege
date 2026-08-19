@@ -32,12 +32,15 @@ function Toggle({ on, onChange, label }) {
         border: "2.5px solid var(--edge)",
         background: on ? "var(--moss)" : "var(--sunk)",
         boxShadow: "0 3px 0 var(--edge)",
-        display: "flex", justifyContent: on ? "flex-end" : "flex-start",
+        display: "flex", justifyContent: "flex-start",
         transition: "background 160ms",
       }}>
+      {/* le rond glisse par `transform` : `justify-content` ne s'anime pas,
+          et le curseur sautait d'un bord à l'autre malgré la transition */}
       <span style={{
         width: 21, height: 21, borderRadius: "50%",
         background: "var(--paper)", border: "2.5px solid var(--edge)",
+        transform: `translateX(${on ? 26 : 0}px)`,
         transition: "transform 160ms cubic-bezier(.34,1.56,.64,1)",
       }} />
     </button>
@@ -67,8 +70,12 @@ function Calendar({ log }) {
           const k = `${year}-${String(month + 1).padStart(2, "0")}-${String(i + 1).padStart(2, "0")}`;
           const n = log[k] || 0;
           const isToday = k === today;
+          const detail = `${i + 1} ${now.toLocaleDateString("fr-FR", { month: "long" })} : `
+            + (n === 0 ? "pas de pratique" : `${n} leçon${n > 1 ? "s" : ""}`);
           return (
-            <span key={k} title={`${i + 1} : ${n} leçon${n > 1 ? "s" : ""}`}
+            // `title` ne s'ouvre qu'à la souris : le lecteur d'écran et le
+            // clavier n'auraient lu que le numéro du jour, jamais la pratique
+            <span key={k} title={detail} role="img" aria-label={detail}
               style={{
                 aspectRatio: "1", borderRadius: 6,
                 border: `2px solid ${isToday ? "var(--edge)" : "transparent"}`,
@@ -79,7 +86,7 @@ function Calendar({ log }) {
                 fontSize: "0.6rem", fontFamily: "PlexMono, monospace",
                 color: n === 0 ? "var(--ink-3)" : "var(--on-color)",
               }}>
-              {i + 1}
+              <span aria-hidden>{i + 1}</span>
             </span>
           );
         })}

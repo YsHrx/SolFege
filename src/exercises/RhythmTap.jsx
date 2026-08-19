@@ -15,11 +15,21 @@ import { shuffle } from "../state/srs.js";
    Tolérance : un quart de temps d'écart sur chaque attaque. À 97 à la
    noire, cela fait environ 155 ms — exigeant sans être injouable, et
    du même ordre que ce qu'un professeur laisse passer.
+
+   Avec un plancher, cependant : le doigt sur un écran tactile n'est pas
+   plus précis à 140 à la noire qu'à 60, alors qu'un quart de temps y
+   tomberait à 107 ms. Sans ce plancher, monter le tempo pour se mettre
+   en difficulté rendrait l'exercice injouable pour une raison qui n'a
+   rien à voir avec le rythme.
    ============================================================ */
 
 const TEST_MIDI = 69;
 const BEATS = 4;
-const TOLERANCE = 0.25; // en temps
+const TOLERANCE = 0.25;      // en temps
+const TOLERANCE_MIN_MS = 145; // plancher absolu, latence tactile comprise
+
+/** Tolérance effective, en temps, au tempo courant. */
+const toleranceAt = (bpm) => Math.max(TOLERANCE, TOLERANCE_MIN_MS / beatMsFor(bpm));
 
 /** Compose une mesure de quatre temps avec les valeurs disponibles. */
 function buildPattern(pool) {
@@ -110,6 +120,8 @@ export function RhythmTapView({ lesson, audio, soundOn, bpm }) {
   useEffect(() => {
     if (lastStamp.current === stamp) return;
     lastStamp.current = stamp;
+    stopLoop(); // par symétrie avec les autres exercices sonores : aucune
+                // boucle ni aucun son de la question précédente ne survit
     setTaps([]);
     setStage("ecoute");
     settled.current = false;
@@ -127,9 +139,10 @@ export function RhythmTapView({ lesson, audio, soundOn, bpm }) {
     // la première frappe donne l'origine : on juge le rythme, pas le
     // temps de réaction
     const t0 = list[0];
+    const tol = toleranceAt(bpmRef.current);
     return q.onsets.every((expected, i) => {
       const got = (list[i] - t0) / beatMsFor(bpmRef.current);
-      return Math.abs(got - expected) <= TOLERANCE;
+      return Math.abs(got - expected) <= tol;
     });
   }, []);
 
