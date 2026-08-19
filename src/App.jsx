@@ -180,6 +180,10 @@ export default function App() {
   useTheme(progress.settings.theme);
 
   useEffect(() => { audio.preload(); }, [audio.preload]);
+  // le diapason vaut pour ce qu'on entend comme pour ce qu'on mesure
+  useEffect(() => {
+    audio.setTuning(progress.settings.a4);
+  }, [audio.setTuning, progress.settings.a4]);
   useEffect(() => { saveProgress(progress); }, [progress]);
 
   const startLesson = useCallback((cfg) => {

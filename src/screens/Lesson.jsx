@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLesson } from "../lesson/engine.js";
 import { LessonBar, ComboBanner, Card } from "../ui/kit.jsx";
 import {
@@ -7,6 +7,7 @@ import {
 import { RhythmView, makeRhythmDraw, rhythmIsCorrect } from "../exercises/RhythmReading.jsx";
 import { IntervalView, makeIntervalDraw, intervalIsCorrect } from "../exercises/IntervalEar.jsx";
 import { RANGES } from "../music/notes.js";
+import { centsToleranceFor, doubleToleranceFor } from "../state/progress.js";
 import {
   NotePlacingView, makePlacingDraw, placingIsCorrect,
 } from "../exercises/NotePlacing.jsx";
@@ -154,6 +155,8 @@ export const EXERCISES = {
 export default function Lesson({ config, progress, audio, onFinish }) {
   const { exercise, format, difficulty, mode, notation, pool } = config;
   const soundOn = progress.settings.sound;
+  const a4 = progress.settings.a4;
+  const cents = centsToleranceFor(progress.settings.intonation);
   const heartsOn = progress.settings.hearts && format === "serie";
 
   const draw = useMemo(() => {
@@ -223,6 +226,20 @@ export default function Lesson({ config, progress, audio, onFinish }) {
 
   const meta = EXERCISES[exercise];
 
+  /* Rejoue l'animation d'entrée SANS remonter la vue.
+     Une clé sur l'index démonterait l'exercice à chaque question — ce qui
+     est sans conséquence pour un QCM, mais coupait le flux du micro et
+     obligeait à le réautoriser à chaque note. On relance donc l'animation
+     à la main, en retirant puis remettant la classe. */
+  const slideRef = useRef(null);
+  useEffect(() => {
+    const el = slideRef.current;
+    if (!el) return;
+    el.classList.remove("anim-slide");
+    void el.offsetWidth; // force un reflow, sinon le navigateur regroupe les deux changements
+    el.classList.add("anim-slide");
+  }, [lesson.index]);
+
   // indicateur de droite : le temps restant, ou le score en cours
   const right =
     format === "chrono" ? (
@@ -275,10 +292,7 @@ export default function Lesson({ config, progress, audio, onFinish }) {
         )}
       </div>
 
-      {/* La clé sur l'index fait rejouer l'animation d'entrée : la question
-          sortante laisse la place à une question qui arrive par la droite,
-          au lieu d'un remplacement sec. */}
-      <div key={lesson.index} className="anim-slide w-full flex flex-col items-center gap-4">
+      <div ref={slideRef} className="anim-slide w-full flex flex-col items-center gap-4">
         {exercise === "notes" && (
           <NoteReadingView lesson={lesson} notation={notation}
             playNote={playNote} soundOn={soundOn} />
@@ -302,10 +316,12 @@ export default function Lesson({ config, progress, audio, onFinish }) {
             bpm={progress.settings.bpm} />
         )}
         {exercise === "doubles" && (
-          <DoubleStopsView lesson={lesson} audio={audio} soundOn={soundOn} />
+          <DoubleStopsView lesson={lesson} audio={audio} soundOn={soundOn}
+            a4={a4} tolerance={doubleToleranceFor(progress.settings.intonation)} />
         )}
         {exercise === "justesse" && (
-          <IntonationView lesson={lesson} audio={audio} soundOn={soundOn} />
+          <IntonationView lesson={lesson} audio={audio} soundOn={soundOn}
+            a4={a4} tolerance={cents} />
         )}
         {exercise === "armures" && <KeySignatureView lesson={lesson} />}
         {exercise === "mesure" && (
@@ -316,7 +332,8 @@ export default function Lesson({ config, progress, audio, onFinish }) {
             bpm={progress.settings.bpm} />
         )}
         {exercise === "chanter" && (
-          <SingIntervalView lesson={lesson} audio={audio} soundOn={soundOn} />
+          <SingIntervalView lesson={lesson} audio={audio} soundOn={soundOn}
+            a4={a4} tolerance={cents} />
         )}
       </div>
 

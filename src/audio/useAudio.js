@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { midiToFreq } from "../music/notes.js";
+import { A4_DEFAULT, midiToFreq } from "../music/notes.js";
 
 /* ============================================================
    SON
@@ -68,6 +68,13 @@ export function useAudio() {
   };
 
   const voicesRef = useRef([]);
+  /* Le diapason. Les échantillons sont enregistrés à 440 : pour qu'un
+     violon accordé à 442 entende la même hauteur que la sienne, on
+     décale la vitesse de lecture d'autant. */
+  const a4Ref = useRef(A4_DEFAULT);
+  const setTuning = useCallback((hz) => {
+    a4Ref.current = Math.min(466, Math.max(400, hz || A4_DEFAULT));
+  }, []);
   const buffersRef = useRef(new Map());
   const inFlightRef = useRef(new Map());
   const [samplesReady, setSamplesReady] = useState(false);
@@ -193,7 +200,7 @@ export function useAudio() {
     const ctx = getCtx();
     if (ctx.state === "suspended") ctx.resume();
     const t0 = ctx.currentTime;
-    const freq = midiToFreq(midi);
+    const freq = midiToFreq(midi, a4Ref.current);
 
     const out = ctx.createGain();
     out.gain.setValueAtTime(0.0001, t0);
@@ -292,7 +299,9 @@ export function useAudio() {
 
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.playbackRate.value = Math.pow(2, (midi - anchorMidi) / 12);
+    // l'écart de diapason est un simple facteur sur la vitesse de lecture
+    src.playbackRate.value =
+      Math.pow(2, (midi - anchorMidi) / 12) * (a4Ref.current / A4_DEFAULT);
 
     // L'échantillon met environ 0,15 s à atteindre son plein niveau. C'est
     // réaliste, mais une double-croche serait alors inaudible : pour les
@@ -372,7 +381,7 @@ export function useAudio() {
 
   return {
     playViolin, playTick, playFeedback, playFanfare,
-    unlock, stopAll, preload, audioNow,
+    unlock, stopAll, preload, audioNow, setTuning,
     samplesReady, sampleProgress, samplesFailed,
   };
 }

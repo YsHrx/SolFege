@@ -23,9 +23,13 @@ import { noteKeyOf } from "./NoteReading.jsx";
    dès qu'on quitte l'exercice.
    ============================================================ */
 
-const TOLERANCE_CENTS = 20;
 const HOLD_MS = 600;
-const GIVE_UP_MS = 15000; // au-delà, on passe : mieux vaut avancer
+const GIVE_UP_MS = 20000; // au-delà, on passe : mieux vaut avancer
+/* Sortir de la zone ne remet pas le compteur à zéro, il redescend — un
+   micro de téléphone donne une mesure qui tremble, et exiger une
+   continuité parfaite rendait la validation presque impossible même
+   quand l'aiguille était visiblement dans le vert. */
+const DECAY = 1.5;
 
 export const intonationKeyOf = (n) => `justesse:${n.label}`;
 
@@ -42,11 +46,11 @@ export function makeIntonationDraw(difficulty, items, pool) {
 export const intonationIsCorrect = (q, value) => value === "juste";
 
 /* ---------- l'aiguille ---------- */
-function Needle({ cents, active }) {
+function Needle({ cents, active, tolerance }) {
   // au-delà de 50 cents on est plus près de la note voisine : inutile
   // d'afficher davantage, l'aiguille se contente de buter
   const clamped = Math.max(-50, Math.min(50, cents ?? 0));
-  const inTune = active && Math.abs(cents) <= TOLERANCE_CENTS;
+  const inTune = active && Math.abs(cents) <= tolerance;
 
   return (
     <div className="w-full">
@@ -58,7 +62,7 @@ function Needle({ cents, active }) {
         {/* la fenêtre de tolérance */}
         <div style={{
           position: "absolute", top: 0, bottom: 0,
-          left: `${50 - TOLERANCE_CENTS}%`, width: `${TOLERANCE_CENTS * 2}%`,
+          left: `${50 - tolerance}%`, width: `${tolerance * 2}%`,
           background: "var(--moss)", opacity: inTune ? 0.3 : 0.14,
           transition: "opacity 160ms",
         }} />
@@ -84,7 +88,10 @@ function Needle({ cents, active }) {
           fontSize: "0.78rem",
           color: active ? (inTune ? "var(--moss)" : "var(--ink-2)") : "var(--ink-3)",
         }}>
-          {active ? `${cents > 0 ? "+" : ""}${Math.round(cents)} cents` : "—"}
+          {!active ? "—"
+            : Math.abs(cents) > 50
+              ? (cents < 0 ? "bien trop bas" : "bien trop haut")
+              : `${cents > 0 ? "+" : ""}${Math.round(cents)} cents`}
         </span>
         <span className="label">trop haut</span>
       </div>
@@ -92,19 +99,22 @@ function Needle({ cents, active }) {
   );
 }
 
-export function IntonationView({ lesson, audio, soundOn }) {
+export function IntonationView({ lesson, audio, soundOn, a4, tolerance }) {
   const { question, phase, wasCorrect, submit, isAsking } = lesson;
   const note = question.note;
-  const target = useMemo(() => midiToFreq(note.midi), [note.midi]);
+  const target = useMemo(() => midiToFreq(note.midi, a4), [note.midi, a4]);
 
   const { state, reading, start, stop } = usePitchTracker();
   const [held, setHeld] = useState(0);
-  const holdSince = useRef(null);
+  const holdRef = useRef(0);
+  const lastTick = useRef(0);
   const startedAt = useRef(Date.now());
   const settled = useRef(false);
 
   const cents = reading ? centsBetween(reading.hz, target) : null;
-  const inTune = cents != null && Math.abs(cents) <= TOLERANCE_CENTS;
+  // Une seule et même condition pour la couleur, la zone verte et la
+  // validation : ce qui est dans le vert est juste, point.
+  const inTune = cents != null && Math.abs(cents) <= tolerance;
 
   // nouvelle question : on remet les compteurs, jamais le micro — le
   // rouvrir à chaque note redemanderait l'autorisation sur certains
@@ -114,7 +124,8 @@ export function IntonationView({ lesson, audio, soundOn }) {
   useEffect(() => {
     if (lastStamp.current === stamp) return;
     lastStamp.current = stamp;
-    holdSince.current = null;
+    holdRef.current = 0;
+    lastTick.current = 0;
     settled.current = false;
     startedAt.current = Date.now();
     setHeld(0);
@@ -122,22 +133,26 @@ export function IntonationView({ lesson, audio, soundOn }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp, soundOn]);
 
-  // tenue de la note
+  /* Tenue de la note. On accumule le temps passé dans le vert et on le
+     redescend — plus vite qu'on ne l'accumule — en dehors. Un décrochage
+     d'une trame coûte ainsi quelques dizaines de millisecondes au lieu
+     de tout annuler, mais rester franchement faux ne valide jamais. */
   useEffect(() => {
     if (!isAsking || state !== "on" || settled.current) return;
-    if (inTune) {
-      if (holdSince.current == null) holdSince.current = Date.now();
-      const t = Date.now() - holdSince.current;
-      setHeld(Math.min(1, t / HOLD_MS));
-      if (t >= HOLD_MS) {
-        settled.current = true;
-        submit("juste");
-      }
-    } else {
-      holdSince.current = null;
-      setHeld(0);
+    const now = Date.now();
+    const dt = lastTick.current ? Math.min(120, now - lastTick.current) : 0;
+    lastTick.current = now;
+
+    holdRef.current = inTune
+      ? holdRef.current + dt
+      : Math.max(0, holdRef.current - dt * DECAY);
+
+    setHeld(Math.min(1, holdRef.current / HOLD_MS));
+    if (holdRef.current >= HOLD_MS) {
+      settled.current = true;
+      submit("juste");
     }
-  }, [inTune, isAsking, state, submit]);
+  }, [cents, inTune, isAsking, state, submit]);
 
   // filet de sécurité : on n'attend pas indéfiniment
   useEffect(() => {
@@ -210,9 +225,12 @@ export function IntonationView({ lesson, audio, soundOn }) {
         <span className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-3)" }}>
           {target.toFixed(1)} Hz
         </span>
+        {a4 !== 440 && (
+          <span className="chip" style={{ color: "var(--ink-3)" }}>La {a4}</span>
+        )}
       </div>
 
-      <Needle cents={cents} active={reading != null} />
+      <Needle cents={cents} active={reading != null} tolerance={tolerance} />
 
       {/* la tenue : c'est elle qui valide, pas le passage fugace */}
       <div className="gauge w-full" style={{ height: 12 }}>

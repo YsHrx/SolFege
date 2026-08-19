@@ -19,9 +19,9 @@ import { makePicker } from "../state/srs.js";
    mesures fausses.
    ============================================================ */
 
-const TOLERANCE = 18;   // plus serré que pour une note seule : c'est l'accord qui bat
 const HOLD_MS = 700;
 const GIVE_UP_MS = 25000;
+const DECAY = 1.5;
 
 export const doubleKeyOf = (d) => `double:${d.low.label}+${d.high.label}`;
 
@@ -39,9 +39,9 @@ export function makeDoubleDraw(items, position = 1) {
 
 export const doubleIsCorrect = (q, v) => v === "juste";
 
-function MiniNeedle({ label, cents, active, tone }) {
+function MiniNeedle({ label, cents, active, tone, tolerance }) {
   const clamped = Math.max(-50, Math.min(50, cents ?? 0));
-  const inTune = active && Math.abs(cents) <= TOLERANCE;
+  const inTune = active && Math.abs(cents) <= tolerance;
   return (
     <div className="flex items-center gap-2 w-full">
       <span className="mono" style={{ fontSize: "0.72rem", width: 42, color: tone }}>
@@ -54,7 +54,7 @@ function MiniNeedle({ label, cents, active, tone }) {
       }}>
         <div style={{
           position: "absolute", top: 0, bottom: 0,
-          left: `${50 - TOLERANCE}%`, width: `${TOLERANCE * 2}%`,
+          left: `${50 - tolerance}%`, width: `${tolerance * 2}%`,
           background: "var(--moss)", opacity: inTune ? 0.32 : 0.14,
           transition: "opacity 160ms",
         }} />
@@ -76,7 +76,9 @@ function MiniNeedle({ label, cents, active, tone }) {
         fontSize: "0.68rem", width: 46, textAlign: "right",
         color: active ? (inTune ? "var(--moss)" : "var(--ink-2)") : "var(--ink-3)",
       }}>
-        {active ? `${cents > 0 ? "+" : ""}${Math.round(cents)}` : "—"}
+        {!active ? "—"
+          : Math.abs(cents) > 50 ? (cents < 0 ? "≪" : "≫")
+            : `${cents > 0 ? "+" : ""}${Math.round(cents)}`}
       </span>
     </div>
   );
@@ -85,25 +87,26 @@ function MiniNeedle({ label, cents, active, tone }) {
 const stringColor = (id) => STRINGS.find((s) => s.id === id)?.color || "var(--ink)";
 const fingerLabel = (f, label) => (f === 0 ? `${label} à vide` : `${f}e doigt sur ${label}`);
 
-export function DoubleStopsView({ lesson, audio, soundOn }) {
+export function DoubleStopsView({ lesson, audio, soundOn, a4, tolerance }) {
   const { question, phase, wasCorrect, submit, isAsking } = lesson;
   const d = question.stop;
 
   const targets = useMemo(
-    () => [midiToFreq(d.low.midi), midiToFreq(d.high.midi)],
-    [d.low.midi, d.high.midi]
+    () => [midiToFreq(d.low.midi, a4), midiToFreq(d.high.midi, a4)],
+    [d.low.midi, d.high.midi, a4]
   );
   const { state, readings, start, stop } = useDoubleTracker(targets);
 
   const [held, setHeld] = useState(0);
-  const holdSince = useRef(null);
+  const holdRef = useRef(0);
+  const lastTick = useRef(0);
   const startedAt = useRef(Date.now());
   const settled = useRef(false);
 
   const bothInTune =
-    readings[0] && readings[1]
-    && Math.abs(readings[0].cents) <= TOLERANCE
-    && Math.abs(readings[1].cents) <= TOLERANCE;
+    !!readings[0] && !!readings[1]
+    && Math.abs(readings[0].cents) <= tolerance
+    && Math.abs(readings[1].cents) <= tolerance;
 
   const playRef = () => {
     audio.stopAll();
@@ -116,7 +119,8 @@ export function DoubleStopsView({ lesson, audio, soundOn }) {
   useEffect(() => {
     if (lastStamp.current === stamp) return;
     lastStamp.current = stamp;
-    holdSince.current = null;
+    holdRef.current = 0;
+    lastTick.current = 0;
     settled.current = false;
     startedAt.current = Date.now();
     setHeld(0);
@@ -124,18 +128,18 @@ export function DoubleStopsView({ lesson, audio, soundOn }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp, soundOn]);
 
+  // même accumulation avec décroissance que pour la note seule
   useEffect(() => {
     if (!isAsking || state !== "on" || settled.current) return;
-    if (bothInTune) {
-      if (holdSince.current == null) holdSince.current = Date.now();
-      const t = Date.now() - holdSince.current;
-      setHeld(Math.min(1, t / HOLD_MS));
-      if (t >= HOLD_MS) { settled.current = true; submit("juste"); }
-    } else {
-      holdSince.current = null;
-      setHeld(0);
-    }
-  }, [bothInTune, isAsking, state, submit]);
+    const now = Date.now();
+    const dt = lastTick.current ? Math.min(120, now - lastTick.current) : 0;
+    lastTick.current = now;
+    holdRef.current = bothInTune
+      ? holdRef.current + dt
+      : Math.max(0, holdRef.current - dt * DECAY);
+    setHeld(Math.min(1, holdRef.current / HOLD_MS));
+    if (holdRef.current >= HOLD_MS) { settled.current = true; submit("juste"); }
+  }, [readings, bothInTune, isAsking, state, submit]);
 
   useEffect(() => {
     if (!isAsking || state !== "on") return undefined;
@@ -212,9 +216,9 @@ export function DoubleStopsView({ lesson, audio, soundOn }) {
 
       <Card className="w-full p-3 flex flex-col gap-2">
         <MiniNeedle label={d.low.label} tone={stringColor(d.lowString)}
-          cents={readings[0]?.cents} active={!!readings[0]} />
+          cents={readings[0]?.cents} active={!!readings[0]} tolerance={tolerance} />
         <MiniNeedle label={d.high.label} tone={stringColor(d.highString)}
-          cents={readings[1]?.cents} active={!!readings[1]} />
+          cents={readings[1]?.cents} active={!!readings[1]} tolerance={tolerance} />
         <div className="gauge w-full" style={{ height: 10, marginTop: 4 }}>
           <i style={{
             width: `${Math.max(2, held * 100)}%`, background: "var(--moss)",

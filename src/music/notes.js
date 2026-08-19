@@ -294,4 +294,17 @@ export const RANGES_BY_CLEF = {
 
 export const rangesFor = (clef = "sol") => RANGES_BY_CLEF[clef] || RANGES;
 
-export const midiToFreq = (m) => 440 * Math.pow(2, (m - 69) / 12);
+/* ============================================================
+   DIAPASON
+
+   Le La3 de référence n'est pas toujours à 440 Hz : beaucoup
+   d'orchestres et de violonistes accordent à 442, et la musique
+   ancienne descend à 415. Toute fréquence calculée dans l'application
+   part donc de ce réglage — la note jouée comme la note attendue au
+   micro. Sans quoi un instrument accordé à 442 serait déclaré faux de
+   huit cents sur chaque note.
+   ============================================================ */
+export const A4_DEFAULT = 440;
+export const A4_RANGE = { min: 415, max: 446 };
+
+export const midiToFreq = (m, a4 = A4_DEFAULT) => a4 * Math.pow(2, (m - 69) / 12);

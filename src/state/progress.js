@@ -20,6 +20,31 @@ export const MAX_FREEZES = 2;
 export const LESSONS_PER_FREEZE = 10;
 export const GOALS = [1, 3, 5];
 
+/* ============================================================
+   EXIGENCE DE JUSTESSE
+
+   Combien de cents d'écart on accepte au micro. Le bon réglage dépend
+   surtout du matériel : un micro de téléphone dans une pièce qui
+   résonne donne une mesure qui tremble de quelques cents en permanence,
+   et une exigence d'accordeur professionnel y devient intenable.
+
+   La zone verte affichée vaut exactement cette tolérance — ce qui est
+   dans le vert est juste, sans autre condition que de le tenir.
+   ============================================================ */
+export const INTONATION_LEVELS = {
+  souple: { id: "souple", label: "Souple", cents: 35 },
+  normale: { id: "normale", label: "Normale", cents: 25 },
+  stricte: { id: "stricte", label: "Stricte", cents: 15 },
+};
+
+export const centsToleranceFor = (level) =>
+  (INTONATION_LEVELS[level] || INTONATION_LEVELS.normale).cents;
+
+/** Les doubles cordes sont plus exigeantes : c'est l'accord qui bat dès
+    que l'une des deux notes dérive. */
+export const doubleToleranceFor = (level) =>
+  Math.max(10, centsToleranceFor(level) - 7);
+
 export const xpForLevel = (l) => 100 + (l - 1) * 60;
 
 /** Date locale au format AAAA-MM-JJ. Volontairement pas de UTC : la
@@ -59,6 +84,8 @@ export const DEFAULT = {
     hearts: true,         // les trois fausses notes
     goal: 3,              // leçons par jour
     bpm: 97,              // tempo de référence des exercices rythmiques
+    a4: 440,              // diapason, en hertz
+    intonation: "normale", // exigence de justesse au micro
   },
 };
 
@@ -97,6 +124,8 @@ function normalise(saved) {
       hearts: s.hearts !== false,
       goal: GOALS.includes(s.goal) ? s.goal : 3,
       bpm: Math.min(140, Math.max(50, num(s.bpm, 97))),
+      a4: Math.min(446, Math.max(415, num(s.a4, 440))),
+      intonation: INTONATION_LEVELS[s.intonation] ? s.intonation : "normale",
     },
   };
 }

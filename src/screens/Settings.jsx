@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Btn, Card, Segmented } from "../ui/kit.jsx";
-import { GOALS, dayKey, importProgress } from "../state/progress.js";
+import {
+  GOALS, INTONATION_LEVELS, dayKey, importProgress,
+} from "../state/progress.js";
+import { A4_RANGE } from "../music/notes.js";
 import { TEMPO } from "../music/rhythm.js";
 import Curve from "../ui/Curve.jsx";
 
@@ -168,6 +171,44 @@ export default function Settings({ progress, onChange, onReset, onImport, onBack
           onChange={(e) => set({ bpm: Number(e.target.value) })}
           aria-label="Tempo, en battements par minute" />
       </Card>
+
+      <span className="label mt-2">Le violon</span>
+      <Card className="p-4 flex flex-col gap-2">
+        <div className="flex items-baseline justify-between">
+          <span style={{ fontWeight: 600, fontSize: "0.95rem" }}>Diapason</span>
+          <span className="mono" style={{ fontSize: "0.95rem" }}>La = {s.a4} Hz</span>
+        </div>
+        <div className="text-xs" style={{ color: "var(--ink-3)" }}>
+          Accordez l'application sur votre instrument. Tout suit : la note que
+          vous entendez comme celle que le micro attend.
+        </div>
+        <input type="range" min={A4_RANGE.min} max={A4_RANGE.max} step="1" value={s.a4}
+          onChange={(e) => set({ a4: Number(e.target.value) })}
+          aria-label="Diapason, en hertz" />
+        <div className="flex gap-2">
+          {[415, 440, 442, 443].map((hz) => (
+            <Btn key={hz} size="sm" onClick={() => set({ a4: hz })}
+              style={{
+                flex: 1,
+                background: s.a4 === hz ? "var(--blue)" : "var(--paper-2)",
+                color: s.a4 === hz ? "var(--on-color)" : "var(--ink)",
+              }}>
+              {hz}
+            </Btn>
+          ))}
+        </div>
+      </Card>
+      <Row title="Exigence de justesse"
+        hint="La largeur de la zone verte au micro. Ce qui est dans le vert est juste.">
+        <Segmented value={s.intonation} onChange={(v) => set({ intonation: v })}
+          ariaLabel="Exigence de justesse"
+          options={Object.values(INTONATION_LEVELS).map((l) => ({ value: l.id, label: l.label }))} />
+      </Row>
+      <p className="text-xs" style={{ color: "var(--ink-3)", marginTop: "-0.4rem" }}>
+        ±{INTONATION_LEVELS[s.intonation].cents} cents. Un micro de téléphone dans
+        une pièce qui résonne tremble de quelques cents en permanence : passez en
+        souple si la validation vous résiste alors que l'aiguille est au centre.
+      </p>
 
       <span className="label mt-2">Pratique</span>
       <Card className="p-4 flex flex-col gap-2">

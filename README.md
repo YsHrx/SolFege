@@ -150,14 +150,26 @@ indiscernables.
 ### La justesse
 
 Une note s'affiche, on la joue, l'application écoute et affiche l'écart en
-cents. Il faut tenir la note à ±20 cents pendant six dixièmes de seconde : un
-passage fugace ne compte pas.
+cents. **La zone verte fait foi** : ce qui est dedans est juste, il suffit de
+l'y tenir six dixièmes de seconde. Sortir de la zone ne remet pas le compteur
+à zéro, il redescend — un micro de téléphone tremble de quelques cents en
+permanence, et exiger une continuité parfaite rendait la validation presque
+impossible.
+
+Sa largeur se règle : souple ±35, normale ±25, stricte ±15 cents.
 
 La détection est une différence carrée normalisée, avec les traitements du
 navigateur coupés — annulation d'écho, réduction de bruit et gain automatique
 sont réglés pour la voix au téléphone et massacrent une note tenue. Les octaves
 fantômes sont écartées et le pic est interpolé : mesuré sur signaux
 synthétiques, l'écart reste sous le demi-cent de Sol3 à Do7.
+
+### Le diapason
+
+Le La de référence se règle de 415 à 446 Hz, avec des préréglages à 415, 440,
+442 et 443. Tout suit : la hauteur des échantillons joués comme la fréquence
+attendue au micro. Sans ce réglage, un violon accordé à 442 serait déclaré faux
+de huit cents sur chaque note.
 
 ### Chanter l'intervalle
 
@@ -295,7 +307,7 @@ sont auto-hébergées : aucune requête vers un CDN.
 | Courbe d'XP, série, gels | `src/state/progress.js` |
 | Mesures, silences, tempo | `src/music/rhythm.js` |
 | Positions et doubles cordes | `src/music/notes.js` |
-| Seuils de justesse au micro | `TOLERANCE` en tête des exercices concernés |
+| Paliers de justesse | `INTONATION_LEVELS` dans `src/state/progress.js` |
 
 ---
 

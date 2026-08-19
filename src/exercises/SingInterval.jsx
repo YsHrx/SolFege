@@ -22,9 +22,13 @@ import { makePicker } from "../state/srs.js";
    absolue.
    ============================================================ */
 
-const TOLERANCE = 35;
 const HOLD_MS = 400;
 const GIVE_UP_MS = 20000;
+const DECAY = 1.5;
+/* La voix n'a pas la précision d'un doigt sur une corde, et l'exercice
+   porte sur l'intervalle, pas sur la justesse absolue : on est plus
+   large qu'à l'accordeur. */
+const EXTRA = 10;
 
 export const singKeyOf = (i) => `chanter:${i.semitones}`;
 
@@ -44,15 +48,17 @@ export function makeSingDraw(difficulty, items) {
 
 export const singIsCorrect = (q, v) => v === "juste";
 
-export function SingIntervalView({ lesson, audio, soundOn }) {
+export function SingIntervalView({ lesson, audio, soundOn, a4, tolerance }) {
   const { question, phase, wasCorrect, submit, isAsking } = lesson;
   const { base, interval } = question;
   const targetMidi = base + interval.semitones;
-  const targetHz = useMemo(() => midiToFreq(targetMidi), [targetMidi]);
+  const targetHz = useMemo(() => midiToFreq(targetMidi, a4), [targetMidi, a4]);
+  const limit = tolerance + EXTRA;
 
   const { state, reading, start, stop } = usePitchTracker();
   const [held, setHeld] = useState(0);
-  const holdSince = useRef(null);
+  const holdRef = useRef(0);
+  const lastTick = useRef(0);
   const startedAt = useRef(Date.now());
   const settled = useRef(false);
 
@@ -66,7 +72,7 @@ export function SingIntervalView({ lesson, audio, soundOn }) {
     return Math.abs(folded) < Math.abs(raw) ? folded : raw;
   }, [reading, targetHz]);
 
-  const inTune = cents != null && Math.abs(cents) <= TOLERANCE;
+  const inTune = cents != null && Math.abs(cents) <= limit;
 
   const playRoot = useCallback(() => {
     audio.stopAll();
@@ -78,7 +84,8 @@ export function SingIntervalView({ lesson, audio, soundOn }) {
   useEffect(() => {
     if (lastStamp.current === stamp) return;
     lastStamp.current = stamp;
-    holdSince.current = null;
+    holdRef.current = 0;
+    lastTick.current = 0;
     settled.current = false;
     startedAt.current = Date.now();
     setHeld(0);
@@ -88,16 +95,15 @@ export function SingIntervalView({ lesson, audio, soundOn }) {
 
   useEffect(() => {
     if (!isAsking || state !== "on" || settled.current) return;
-    if (inTune) {
-      if (holdSince.current == null) holdSince.current = Date.now();
-      const t = Date.now() - holdSince.current;
-      setHeld(Math.min(1, t / HOLD_MS));
-      if (t >= HOLD_MS) { settled.current = true; submit("juste"); }
-    } else {
-      holdSince.current = null;
-      setHeld(0);
-    }
-  }, [inTune, isAsking, state, submit]);
+    const now = Date.now();
+    const dt = lastTick.current ? Math.min(120, now - lastTick.current) : 0;
+    lastTick.current = now;
+    holdRef.current = inTune
+      ? holdRef.current + dt
+      : Math.max(0, holdRef.current - dt * DECAY);
+    setHeld(Math.min(1, holdRef.current / HOLD_MS));
+    if (holdRef.current >= HOLD_MS) { settled.current = true; submit("juste"); }
+  }, [cents, inTune, isAsking, state, submit]);
 
   useEffect(() => {
     if (!isAsking || state !== "on") return undefined;
@@ -143,7 +149,7 @@ export function SingIntervalView({ lesson, audio, soundOn }) {
   }
 
   const shake = phase === "feedback" && !wasCorrect;
-  const direction = cents == null ? null : cents < -TOLERANCE ? "haut" : cents > TOLERANCE ? "bas" : null;
+  const direction = cents == null ? null : cents < -limit ? "haut" : cents > limit ? "bas" : null;
 
   return (
     <>
